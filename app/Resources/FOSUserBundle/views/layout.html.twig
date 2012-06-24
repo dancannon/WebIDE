@@ -1,0 +1,16 @@
+{% extends 'WebIDESiteBundle::layout.html.twig' %}
+
+{% block content %}
+<div class="container-small">
+    <div id="main">
+        <div class="header clearfix">
+            <div class="logo">
+                <h1>WebIDE</h1>
+            </div>
+        </div>
+        <div class="content clearfix">
+            {% block fos_user_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

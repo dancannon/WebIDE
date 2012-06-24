@@ -1,0 +1,19 @@
+.idea
+.rsync_cache
+
+# Bootstrap
+app/bootstrap*
+
+# Symfony directories
+vendor/*
+*/logs/*
+*/cache/*
+web/uploads/*
+web/bundles/*
+
+# Build tools
+**/node_modules/*
+
+# Configuration files
+app/config/parameters.ini
+app/config/parameters.yml

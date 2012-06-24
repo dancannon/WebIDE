@@ -1,0 +1,82 @@
+#sidebar {
+    background: #FFF;
+    position: absolute;
+    top: 50px;
+    bottom: 50px;
+    right: 0;
+    left: 0;
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+#sidebar .header {
+    float: left;
+    position: absolute;
+    overflow: hidden;
+    top: 0;
+    left: 0;
+    right: 5px;
+    height: 22px;
+    padding: 2px 5px 0 5px;
+    border: 1px solid #a5a5a5;
+    border-width: 1px 0 1px 1px;
+    #gradient > .vertical(#e3e3e3, #d0d0d0);
+}
+
+#minimize_sidebar {
+    text-decoration: none;
+    z-index: 5;
+    position: absolute;
+    top: 1px;
+    right: 6px;
+    background: none;
+    border: none;
+}
+
+#minimize_sidebar:hover {
+    border: 1px solid #a5a5a5;
+    #gradient > .vertical(#FFF, #e7e7e7);
+}
+
+#sidebar .content {
+    float: left;
+    position: absolute;
+    top: 26px;
+    left: 0;
+    right: 5px;
+    bottom: 0;
+    border: 1px solid #a5a5a5;
+    border-width: 0 0 1px 1px;
+    overflow-y: scroll;
+    overflow-x: auto;
+    padding: 5px;
+}
+
+#sidebar .resize{
+    display: block;
+    width: 5px;
+    height: 100%;
+    float: right;
+    display: block;
+    cursor: col-resize;
+    background-color: #a5a5a5;
+}
+
+#sidebar.active {
+    width: 275px;
+    min-width: 25px;
+}
+
+#sidebar.inactive {
+    width: 7px;
+}
+
+#sidebar.inactive #minimize_sidebar, #sidebar.inactive #sidebar_container {
+    display: none;
+}
+
+#sidebar.inactive .resize {
+    width: 7px;
+    cursor: pointer;
+}

@@ -1,0 +1,127 @@
+/** File Tree **/
+.filetree {
+    font-size: 11px;
+    line-height: 18px;
+    padding: 0px;
+    margin: 0px;
+    .user-select(none);
+}
+
+.filetree li {
+    list-style: none;
+    padding: 0px;
+    padding-left: 20px;
+    margin: 0px;
+    white-space: nowrap;
+}
+
+.filetree li.collapsed ul {
+    display: none;
+}
+
+.filetree a {
+    color: #333;
+    text-decoration: none;
+    display: block;
+    padding: 0px 2px;
+    cursor: default;
+}
+
+.filetree a:hover {
+    background: #BDF;
+}
+
+.filetree .directory { background: url(../img/directory.png) left top no-repeat; }
+.filetree .directory.expanded { background: url(../img/directory_open.png) left top no-repeat; }
+.filetree .wait { background: url(../img/spinner.gif) left top no-repeat; }
+.filetree .file { background: url(../img/file.png) left top no-repeat; }
+.filetree .code { background: url(../img/code.png) left top no-repeat; }
+.filetree .file_javascript { background: url(../img/js.png) left top no-repeat; }
+.filetree .file_css { background: url(../img/css.png) left top no-repeat; }
+.filetree .file_html { background: url(../img/html.png) left top no-repeat; }
+.filetree .file_img { background: url(../img/img.png) left top no-repeat; }
+.filetree .file_txt { background: url(../img/txt.png) left top no-repeat; }
+
+/** File Tabs **/
+.file_tabs {
+    height: 26px;
+    border: 1px solid #a5a5a5;
+    overflow: hidden;
+    display: block;
+    #gradient > .vertical(#FFF, #e7e7e7);
+    .user-select(none);
+}
+
+.readonly .file_tabs {
+    #gradient > .vertical(#e3e3e3, #d0d0d0);
+}
+
+.file_tabs ul {
+    margin: 0;
+    padding: 0;
+    width: 9999px;
+}
+
+.file_tabs > .file_tab {
+    float: left;
+}
+
+.file_tab:first-child {
+    border-left-width: 0 !important;
+}
+
+.file_tab:last-child {
+    border-width: 0 1px 1px 1px;
+}
+
+.file_tab {
+    float: left;
+    position: relative;
+    height: 22px;
+    width: 150px;
+    border: 1px solid #a5a5a5;
+    border-width: 0 0 1px 1px;
+    #gradient > .vertical(#e3e3e3, #d0d0d0);
+}
+
+.file_tab.tab_active {
+    background: none;
+    border-bottom: none;
+}
+
+.file_tab:last-child:after {
+    content: "";
+    display: block;
+    position: relative;
+    left: 150px;
+    top: -20px;
+    right: 0;
+    height: 22px;
+    width: 9999px;
+    #gradient > .vertical(#e3e3e3, #d0d0d0);
+    border: 1px solid #a5a5a5;
+    border-width: 0 0 1px 1px;
+    border-right: none;
+}
+
+.file_tab .tabname {
+    color: #000;
+    margin-right: 5px;
+    text-align: center;
+    display: block;
+    padding: 1px 4px;
+    margin-right: 20px;
+    overflow: hidden;
+    cursor: default;
+}
+
+.file_tab .tabname:hover {
+    text-decoration: none;
+}
+
+.file_tab .close {
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    padding: 0;
+}

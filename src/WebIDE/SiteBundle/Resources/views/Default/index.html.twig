@@ -1,0 +1,9 @@
+{% extends "WebIDESiteBundle::layout.html.twig" %}
+
+{% block content %}
+<div id="container"></div>
+{% endblock %}
+
+{% block javascripts %}
+<script data-main="{{ asset('js/app') }}" src="{{ asset('/js/require.js') }}"></script>
+{% endblock %}

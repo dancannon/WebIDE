@@ -1,0 +1,60 @@
+#header {
+    #gradient > .vertical(#2f3033, #47474c);
+    height: 50px;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    .user-select(none);
+}
+
+#header .logo {
+    width: 150px;
+    float: left;
+    margin: 0px 20px 0;
+    background: url('../img/logo.png') no-repeat left center;
+    padding-left: 25px;
+}
+
+#header .logo h1{
+    font-weight: bold;
+    color: black;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .1), 0 0 30px rgba(255, 255, 255, .125);
+    -webkit-transition: all .2s linear;
+    -moz-transition: all .2s linear;
+    transition: all .2s linear;
+}
+
+#header .menu {
+    display: inline-block;
+}
+
+#header .menu .btn {
+    #gradient > .vertical(#2f3033, #222);
+    border-color: #2f3033 #222 #CCC;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    color: #FFF;
+}
+#header .menu .btn:hover,
+#header .menu .btn:active,
+#header .menu .btn.active,
+#header .menu .btn-.disabled,
+#header .menu .btn[disabled] {
+    background-color: #222;
+}
+#header .menu .btn:active, .btn.active {
+    background-color: #2f3033 \9;
+}
+
+#header .caret {
+    border-top-color: #FFF;
+}
+
+#menu_left, #menu_right {
+    margin: 11px 0;
+}
+
+#menu_right {
+    float: right;
+    position: relative;
+    right: 20px;
+}

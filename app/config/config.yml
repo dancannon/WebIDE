@@ -1,0 +1,80 @@
+imports:
+    - { resource: parameters.yml }
+    - { resource: security.yml }
+
+framework:
+    #esi:             ~
+    translator:      { fallback: %locale% }
+    secret:          %secret%
+    charset:         UTF-8
+    router:          { resource: "%kernel.root_dir%/config/routing.yml" }
+    form:            true
+    csrf_protection: true
+    validation:      { enable_annotations: true }
+    templating:      { engines: ['twig'] } #assets_version: SomeVersionScheme
+    default_locale:  %locale%
+    session:
+        auto_start:     true
+
+# Twig Configuration
+twig:
+    debug:            %kernel.debug%
+    strict_variables: %kernel.debug%
+
+# Assetic Configuration
+assetic:
+    debug:          %kernel.debug%
+    use_controller: false
+    bundles:        ['WebIDESiteBundle']
+    #java: /usr/bin/java
+    filters:
+        less:
+            node: /usr/local/bin/node
+            node_paths: [/usr/local/lib/node_modules]
+        cssrewrite: ~
+        #closure:
+        #    jar: %kernel.root_dir%/Resources/bin/compiler.jar
+        yui_css:
+            jar: %kernel.root_dir%/Resources/bin/yuicompressor-2.4.7.jar
+        yui_js:
+            jar: %kernel.root_dir%/Resources/bin/yuicompressor-2.4.7.jar
+
+# Doctrine Configuration
+doctrine:
+    dbal:
+        driver:   %database_driver%
+        host:     %database_host%
+        port:     %database_port%
+        dbname:   %database_name%
+        user:     %database_user%
+        password: %database_password%
+        charset:  UTF8
+
+    orm:
+        auto_generate_proxy_classes: %kernel.debug%
+        auto_mapping: t
+
+# Swiftmailer Configuration
+swiftmailer:
+    transport: %mailer_transport%
+    host:      %mailer_host%
+    username:  %mailer_user%
+    password:  %mailer_password%
+    spool:     { type: memory }
+
+fos_user:
+    db_driver: orm
+    firewall_name: main
+    user_class: WebIDE\SiteBundle\Entity\User
+
+fos_rest:
+    routing_loader:
+        default_format: json
+    view:
+        view_response_listener: false
+
+stof_doctrine_extensions:
+    default_locale: en_US
+    orm:
+        default:
+            timestampable: true

@@ -1,0 +1,241 @@
+{
+    "hash": "4e7940205cd682c2d94f984a6793bd8e",
+    "packages": [
+        {
+            "package": "doctrine/common",
+            "version": "2.2.2"
+        },
+        {
+            "package": "doctrine/dbal",
+            "version": "2.2.x-dev",
+            "source-reference": "8cc129aa64a8de6447056bce20f0a274fe2a340b",
+            "commit-date": "1338113316"
+        },
+        {
+            "package": "doctrine/doctrine-bundle",
+            "version": "dev-master",
+            "source-reference": "94951737d6c692500d6b13bb92871935568a4ba5",
+            "commit-date": "1340102167"
+        },
+        {
+            "package": "doctrine/orm",
+            "version": "2.2.x-dev",
+            "source-reference": "5f66c65c9a8d984899903b54215d0249a45b92d6",
+            "commit-date": "1338138826"
+        },
+        {
+            "package": "friendsofsymfony/jsrouting-bundle",
+            "version": "dev-master",
+            "source-reference": "1692ba9e4500b75001ec945993d4b7b8cec05a16",
+            "commit-date": "1339679434"
+        },
+        {
+            "package": "friendsofsymfony/rest",
+            "version": "dev-master",
+            "alias-pretty-version": "0.7.x-dev",
+            "alias-version": "0.7.9999999.9999999-dev"
+        },
+        {
+            "package": "friendsofsymfony/rest",
+            "version": "dev-master",
+            "source-reference": "5ea703f5a3f5c7110cadeccb91b212c0eb7ea2d0",
+            "commit-date": "1339701893"
+        },
+        {
+            "package": "friendsofsymfony/rest-bundle",
+            "version": "dev-master",
+            "source-reference": "e1844029a597136841900c10e8a5a9c5c325de9d",
+            "commit-date": "1339756640"
+        },
+        {
+            "package": "friendsofsymfony/user-bundle",
+            "version": "dev-master",
+            "source-reference": "6200cecef5e1ae9c473d00220800b5cc2d09c7b1",
+            "commit-date": "1340289625"
+        },
+        {
+            "package": "gedmo/doctrine-extensions",
+            "version": "dev-master",
+            "source-reference": "5d9bbdb7768d6be2dd3b91ab433ac0c1fe2c586d",
+            "commit-date": "1340043705"
+        },
+        {
+            "package": "jms/aop-bundle",
+            "version": "1.0.0"
+        },
+        {
+            "package": "jms/cg",
+            "version": "1.0.0"
+        },
+        {
+            "package": "jms/di-extra-bundle",
+            "version": "1.0.1"
+        },
+        {
+            "package": "jms/metadata",
+            "version": "1.1.1"
+        },
+        {
+            "package": "jms/security-extra-bundle",
+            "version": "1.1.0"
+        },
+        {
+            "package": "jms/serializer-bundle",
+            "version": "dev-master",
+            "alias-pretty-version": "0.9.x-dev",
+            "alias-version": "0.9.9999999.9999999-dev"
+        },
+        {
+            "package": "jms/serializer-bundle",
+            "version": "dev-master",
+            "source-reference": "801132b68520b2b1f826a50e4eb12a31e1463303",
+            "commit-date": "1339681843"
+        },
+        {
+            "package": "kriswallsmith/assetic",
+            "version": "dev-master",
+            "alias-pretty-version": "1.1.x-dev",
+            "alias-version": "1.1.9999999.9999999-dev"
+        },
+        {
+            "package": "kriswallsmith/assetic",
+            "version": "dev-master",
+            "source-reference": "d6f89a3170c5280ad554347dc113eb25fdf00ad7",
+            "commit-date": "1339515714"
+        },
+        {
+            "package": "kriswallsmith/buzz",
+            "version": "dev-master",
+            "source-reference": "5c7d0523501f02c766166b08ac98613bde0254b5",
+            "commit-date": "1337973884"
+        },
+        {
+            "package": "monolog/monolog",
+            "version": "1.1.0"
+        },
+        {
+            "package": "sensio/buzz-bundle",
+            "version": "dev-master",
+            "source-reference": "0754d7dd155efc4f85de60993571b0b6a5aaccb9",
+            "commit-date": "1338188924"
+        },
+        {
+            "package": "sensio/distribution-bundle",
+            "version": "dev-master",
+            "source-reference": "cf64fbe0d4cd0d6b88b2018efb037f18a0753271",
+            "commit-date": "1340265407"
+        },
+        {
+            "package": "sensio/framework-extra-bundle",
+            "version": "dev-master",
+            "alias-pretty-version": "2.1.x-dev",
+            "alias-version": "2.1.9999999.9999999-dev"
+        },
+        {
+            "package": "sensio/framework-extra-bundle",
+            "version": "dev-master",
+            "source-reference": "62e41b85947034b0f1dfe31bb8e76920e1488571",
+            "commit-date": "1340116878"
+        },
+        {
+            "package": "sensio/generator-bundle",
+            "version": "dev-master",
+            "source-reference": "43ed45c48db18e4a0e48aec0c098f42e56e22d36",
+            "commit-date": "1340138445"
+        },
+        {
+            "package": "stof/doctrine-extensions-bundle",
+            "version": "dev-master",
+            "source-reference": "f141a698d65271a18d86469c1f7b29d7e24170dd",
+            "commit-date": "1334871333"
+        },
+        {
+            "package": "swiftmailer/swiftmailer",
+            "version": "dev-master",
+            "alias-pretty-version": "4.1.x-dev",
+            "alias-version": "4.1.9999999.9999999-dev"
+        },
+        {
+            "package": "swiftmailer/swiftmailer",
+            "version": "dev-master",
+            "source-reference": "d57ffdeed664d6061cef0047e1f5d3fc3ee3fb99",
+            "commit-date": "1340275580"
+        },
+        {
+            "package": "symfony/assetic-bundle",
+            "version": "dev-master",
+            "source-reference": "8fe7b898b08103c1d6fce64c3e279a7afd61adfc",
+            "commit-date": "1340234971"
+        },
+        {
+            "package": "symfony/monolog-bundle",
+            "version": "dev-master",
+            "source-reference": "0b5046d3d1ef93cd59ceabfa37de2665f5118c7f",
+            "commit-date": "1339708477"
+        },
+        {
+            "package": "symfony/swiftmailer-bundle",
+            "version": "dev-master",
+            "source-reference": "d05c9c514a631ee688c53c4cc5505da757bd50d3",
+            "commit-date": "1340144744"
+        },
+        {
+            "package": "symfony/symfony",
+            "version": "dev-master",
+            "alias-pretty-version": "2.1.x-dev",
+            "alias-version": "2.1.9999999.9999999-dev"
+        },
+        {
+            "package": "symfony/symfony",
+            "version": "dev-master",
+            "alias-pretty-version": "2.1.x-dev",
+            "alias-version": "2.1.9999999.9999999-dev"
+        },
+        {
+            "package": "symfony/symfony",
+            "version": "dev-master",
+            "source-reference": "0d4b02e4523a4ad4bef06bd7de196b5fdd5180f6",
+            "commit-date": "1340300540"
+        },
+        {
+            "package": "twig/extensions",
+            "version": "dev-master",
+            "source-reference": "feb6d3f10c411e2631997c0a905aa581c80305c1",
+            "commit-date": "1337599699"
+        },
+        {
+            "package": "twig/twig",
+            "version": "dev-master",
+            "alias-pretty-version": "1.8.x-dev",
+            "alias-version": "1.8.9999999.9999999-dev"
+        },
+        {
+            "package": "twig/twig",
+            "version": "dev-master",
+            "source-reference": "4679ad51c5390648b7ea4c8f0ecd2c0c344145ba",
+            "commit-date": "1339959143"
+        }
+    ],
+    "packages-dev": [
+
+    ],
+    "aliases": [
+
+    ],
+    "minimum-stability": "dev",
+    "stability-flags": {
+        "doctrine/doctrine-bundle": 20,
+        "twig/extensions": 20,
+        "symfony/assetic-bundle": 20,
+        "symfony/swiftmailer-bundle": 20,
+        "symfony/monolog-bundle": 20,
+        "sensio/distribution-bundle": 20,
+        "sensio/framework-extra-bundle": 20,
+        "sensio/generator-bundle": 20,
+        "stof/doctrine-extensions-bundle": 20,
+        "sensio/buzz-bundle": 20,
+        "friendsofsymfony/user-bundle": 20,
+        "friendsofsymfony/rest-bundle": 20,
+        "friendsofsymfony/jsrouting-bundle": 20
+    }
+}

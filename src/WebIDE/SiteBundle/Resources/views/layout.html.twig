@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>WebIDE.IO</title>
+
+    <!-- Application styles -->
+    <link rel="stylesheet" href="{{ asset('/css/style.css') }}" />
+</head>
+
+<body>
+{% block content %}{% endblock %}
+<script type="text/javascript">
+    window.globals = {
+        env:"{{ app.environment }}",
+        debug: {{ app.debug ? 'true' : 'false' }},
+        baseUrl: "{{ app.request.baseUrl }}"
+    };
+</script>
+<script type="text/javascript" src="{{ asset('bundles/fosjsrouting/js/router.js') }}"></script>
+<script type="text/javascript" src="{{ path('fos_js_routing_js', {"callback": "fos.Router.setData"}) }}"></script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

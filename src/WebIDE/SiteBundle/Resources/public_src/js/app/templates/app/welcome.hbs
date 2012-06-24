@@ -1,0 +1,33 @@
+<div class="header clearfix">
+    <div class="logo">
+        <h1>WebIDE</h1>
+    </div>
+</div>
+<div class="content clearfix">
+    <div id="new_project">
+        <h4>New Project</h4>
+        <form>
+            <label for="project_type">Project Type</label>
+            <select id="project_type">
+                <option value="1">Blank Project</option>
+                <option value="2">Basic Project</option>
+            </select>
+            <button id="submit" class="btn">Create</button>
+            {{#if project_id}}
+            <a href="/{{project_id}}" class="back btn">Back</a>
+            {{/if}}
+        </form>
+    </div>
+    <div id="recent_projects">
+        <h4>Recent Projects</h4>
+        {{#if num_projects}}
+            <ul>
+                {{#each projects}}
+                    <li><a href="/{{id}}">{{id}}</a> | <time>{{{date updated}}}</time></li>
+                {{/each}}
+            </ul>
+        {{else}}
+            <p>There are no recent projects</p>
+        {{/if}}
+    </div>
+</div>

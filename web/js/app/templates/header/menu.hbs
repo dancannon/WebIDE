@@ -1,0 +1,43 @@
+<div id="menu_left" class="menu btn-toolbar">
+    <div class="btn-group">
+        <a class="switch_project btn"><i class="icon-folder-open icon-white"></i> Switch Project</a>
+        <a class="new btn"><i class="icon-file icon-white"></i> New</a>
+        <a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+        <ul class="dropdown-menu hide">
+            <li><a class="new">New File</a></li>
+            <li><a class="import">Import File</a></li>
+        </ul>
+    </div>
+
+    <div class="btn-group">
+        <a class="run btn"><i class="icon-play icon-white"></i> Run</a>
+        <a class="save btn"><i class="icon-plus icon-white"></i> Save</a>
+        <a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+        <ul class="dropdown-menu hide">
+            <li><a class="save">Save</a></li>
+            <li><a class="new">New Version</a></li>
+            {{#if versions}}
+            <li class="divider"></li>
+            {{#each versions}}
+                <li><a href="/{{../project.id}}/{{id}}">Version #{{name}}</a></li>
+            {{/each}}
+            {{/if}}
+        </ul>
+    </div>
+
+    <div class="btn-group">
+        <a class="download btn"><i class="icon-download-alt icon-white"></i> Download</a>
+    </div>
+</div>
+
+<div id="menu_right" class="menu btn-toolbar">
+    <div class="btn-group">
+        <a class="btn" class="profile"><i class="icon-user icon-white"></i> Profile</a>
+        <a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+        <ul class="dropdown-menu hide">
+            <!--<li><a class="profile">View Profile</a></li>-->
+            <!--<li><a class="settings">Settings</a></li>-->
+            <li><a href="/logout" data-bypass="true">Log Out</a></li>
+        </ul>
+    </div>
+</div>
