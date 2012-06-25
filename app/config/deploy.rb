@@ -30,13 +30,13 @@ set :shared_children, [app_path + "/logs", web_path + "/uploads", "vendor"]
 set :asset_children,   [web_path + "/css", web_path + "/js"]
 
 # Change ACL on the app/logs and app/cache directories
-after 'deploy', 'deploy:update_acl'
+before 'deploy:restart', 'deploy:update_acl'
 
 # This is a custom task to set the ACL on the app/logs and app/cache directories
 namespace :deploy do
 
   task :update_acl, :roles => :app do
-    shared_dirs = [
+    writable_dirs = [
         app_path + "/logs",
         app_path + "/cache"
     ]
@@ -44,7 +44,7 @@ namespace :deploy do
     # add group write permissions
     #run "chmod -R g+w #{shared_dirs.join(' ')}"
     # Allow directories to be writable by webserver and this user
-    run "cd #{latest_release} && setfacl -R -m u:www-data:rwx -m u:#{user}:rwx #{shared_dirs.join(' ')}"
-    run "cd #{latest_release} && setfacl -dR -m u:www-data:rwx -m u:#{user}:rwx #{shared_dirs.join(' ')}"
+    run "cd #{latest_release} && setfacl -R -m u:www-data:rwx -m u:#{user}:rwx #{writable_dirs.join(' ')}"
+    run "cd #{latest_release} && setfacl -dR -m u:www-data:rwx -m u:#{user}:rwx #{writable_dirs.join(' ')}"
   end
 end

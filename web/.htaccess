@@ -333,14 +333,3 @@ RewriteCond %{REQUEST_URI} !.(css|gif|jpg|png)$
 RewriteCond %{DOCUMENT_ROOT}/system/maintenance.html -f
 RewriteCond %{SCRIPT_FILENAME} !maintenance.html
 RewriteRule ^.*$  -  [redirect=503,last]
-
-# Or if you are using Nginx add this to your server config:
-
-if (-f $document_root/system/maintenance.html) {
-  return 503
-}
-error_page 503 @maintenance;
-location @maintenance {
-  rewrite  ^(.*)$  /system/maintenance.html last;
-  break
-}

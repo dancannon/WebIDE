@@ -1,5 +1,5 @@
 {
-    "hash": "4e7940205cd682c2d94f984a6793bd8e",
+    "hash": "2d5422e3e77bf0ba3d33f31a2942b997",
     "packages": [
         {
             "package": "doctrine/common",
@@ -44,8 +44,14 @@
         {
             "package": "friendsofsymfony/rest-bundle",
             "version": "dev-master",
-            "source-reference": "e1844029a597136841900c10e8a5a9c5c325de9d",
-            "commit-date": "1339756640"
+            "alias-pretty-version": "0.7.x-dev",
+            "alias-version": "0.7.9999999.9999999-dev"
+        },
+        {
+            "package": "friendsofsymfony/rest-bundle",
+            "version": "dev-master",
+            "source-reference": "f279c12d1e375fc3a63255589b5959015238607b",
+            "commit-date": "1340563368"
         },
         {
             "package": "friendsofsymfony/user-bundle",
@@ -56,8 +62,14 @@
         {
             "package": "gedmo/doctrine-extensions",
             "version": "dev-master",
-            "source-reference": "5d9bbdb7768d6be2dd3b91ab433ac0c1fe2c586d",
-            "commit-date": "1340043705"
+            "alias-pretty-version": "2.3.x-dev",
+            "alias-version": "2.3.9999999.9999999-dev"
+        },
+        {
+            "package": "gedmo/doctrine-extensions",
+            "version": "dev-master",
+            "source-reference": "9ed48efd2868652f9020c681519d176688a0e87f",
+            "commit-date": "1340362268"
         },
         {
             "package": "jms/aop-bundle",
@@ -122,8 +134,8 @@
         {
             "package": "sensio/distribution-bundle",
             "version": "dev-master",
-            "source-reference": "cf64fbe0d4cd0d6b88b2018efb037f18a0753271",
-            "commit-date": "1340265407"
+            "source-reference": "a360ad61fe34206a7295c1ef00b5455b2b2e1071",
+            "commit-date": "1340305968"
         },
         {
             "package": "sensio/framework-extra-bundle",
@@ -158,8 +170,14 @@
         {
             "package": "swiftmailer/swiftmailer",
             "version": "dev-master",
-            "source-reference": "d57ffdeed664d6061cef0047e1f5d3fc3ee3fb99",
-            "commit-date": "1340275580"
+            "alias-pretty-version": "4.1.x-dev",
+            "alias-version": "4.1.9999999.9999999-dev"
+        },
+        {
+            "package": "swiftmailer/swiftmailer",
+            "version": "dev-master",
+            "source-reference": "0173abd7bb539bc5dd0b823b06b46636121384e9",
+            "commit-date": "1340373948"
         },
         {
             "package": "symfony/assetic-bundle",
@@ -194,7 +212,7 @@
         {
             "package": "symfony/symfony",
             "version": "dev-master",
-            "source-reference": "0d4b02e4523a4ad4bef06bd7de196b5fdd5180f6",
+            "source-reference": "v2.1.0-BETA1",
             "commit-date": "1340300540"
         },
         {
@@ -216,9 +234,7 @@
             "commit-date": "1339959143"
         }
     ],
-    "packages-dev": [
-
-    ],
+    "packages-dev": null,
     "aliases": [
 
     ],
