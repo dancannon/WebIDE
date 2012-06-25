@@ -20,8 +20,7 @@ set :model_manager, "doctrine"
 set :keep_releases,  3
 set :use_sudo,      true
 set :use_composer, true
-set :update_vendors, false
-set :vendors_mode, "install"
+#set :vendors_mode, "install"
 
 default_run_options[:pty] = true
 
@@ -29,30 +28,3 @@ default_run_options[:pty] = true
 set :shared_files,    ["app/config/parameters.yml"]
 set :shared_children, [app_path + "/logs", web_path + "/uploads"]
 set :asset_children,   [web_path + "/css", web_path + "/js"]
-
-namespace :symfony do
-  namespace :composer do
-    desc "Gets composer and installs it"
-    task :get do
-      run "cd #{latest_release} && curl -s http://getcomposer.org/installer | #{php_bin}"
-    end
-
-    desc "Runs composer to install vendors from composer.lock file"
-    task :install do
-      if !File.exist?("#{latest_release}/composer.phar")
-        symfony.composer.get
-      end
-
-      run "cd #{latest_release} && #{php_bin} composer.phar install"
-    end
-
-    desc "Runs composer to update vendors, and composer.lock file"
-    task :update do
-      if !File.exist?("#{latest_release}/composer.phar")
-        symfony.composer.get
-      end
-
-      run "cd #{latest_release} && #{php_bin} composer.phar update"
-    end
-  end
-end
