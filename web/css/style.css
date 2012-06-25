@@ -4604,7 +4604,6 @@ ul.noty_cont.noty_layout_topRight li {
 }
 .container-small {
   width: 600px;
-  min-height: 200px;
   top: 50%;
   left: 50%;
   margin-left: -300px;
