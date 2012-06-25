@@ -15,7 +15,7 @@ class ResourceController extends Controller
     public function getResourceAction($url)
     {
         if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(503);
+            throw new HttpException(403);
         }
 
         $view = View::create();

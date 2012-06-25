@@ -19,7 +19,7 @@ class ProjectController extends Controller
     public function getProjectsAction()
     {
         if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(503);
+            throw new HttpException(403);
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -40,7 +40,7 @@ class ProjectController extends Controller
     public function getRecentProjectsAction()
     {
         if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(503);
+            throw new HttpException(403);
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -59,7 +59,7 @@ class ProjectController extends Controller
     public function getProjectAction($id)
     {
         if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(503);
+            throw new HttpException(403);
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -90,7 +90,7 @@ class ProjectController extends Controller
     public function getProjectVersionAction($id, $version)
     {
         if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(503);
+            throw new HttpException(403);
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -123,7 +123,7 @@ class ProjectController extends Controller
     public function newProjectVersionAction($id)
     {
         if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(503);
+            throw new HttpException(403);
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -184,7 +184,7 @@ class ProjectController extends Controller
     public function downloadProjectAction($id)
     {
         if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(503);
+            throw new HttpException(403);
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -212,7 +212,7 @@ class ProjectController extends Controller
     public function postProjectsAction()
     {
         if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(503);
+            throw new HttpException(403);
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -237,7 +237,7 @@ class ProjectController extends Controller
     public function putProjectAction($id)
     {
         if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(503);
+            throw new HttpException(403);
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -270,7 +270,7 @@ class ProjectController extends Controller
     public function deleteProjectAction($id)
     {
         if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(503);
+            throw new HttpException(403);
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -297,7 +297,7 @@ class ProjectController extends Controller
     protected function createProjectFromRequest(Project $project)
     {
         if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(503);
+            throw new HttpException(403);
         }
 
         $em = $this->getDoctrine()->getManager();

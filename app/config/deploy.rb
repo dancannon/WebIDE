@@ -20,11 +20,31 @@ set :model_manager, "doctrine"
 set :keep_releases,  3
 set :use_sudo,      true
 set :use_composer, true
-#set :vendors_mode, "install"
+set :vendors_mode, "install"
 
 default_run_options[:pty] = true
 
 # Set some paths to be shared between versions
 set :shared_files,    ["app/config/parameters.yml"]
-set :shared_children, [app_path + "/logs", web_path + "/uploads"]
+set :shared_children, [app_path + "/logs", web_path + "/uploads", "vendor"]
 set :asset_children,   [web_path + "/css", web_path + "/js"]
+
+# Change ACL on the app/logs and app/cache directories
+after 'deploy', 'deploy:update_acl'
+
+# This is a custom task to set the ACL on the app/logs and app/cache directories
+namespace :deploy do
+
+  task :update_acl, :roles => :app do
+    shared_dirs = [
+        app_path + "/logs",
+        app_path + "/cache"
+    ]
+
+    # add group write permissions
+    #run "chmod -R g+w #{shared_dirs.join(' ')}"
+    # Allow directories to be writable by webserver and this user
+    run "cd #{latest_release} && setfacl -R -m u:www-data:rwx -m u:#{user}:rwx #{shared_dirs.join(' ')}"
+    run "cd #{latest_release} && setfacl -dR -m u:www-data:rwx -m u:#{user}:rwx #{shared_dirs.join(' ')}"
+  end
+end
