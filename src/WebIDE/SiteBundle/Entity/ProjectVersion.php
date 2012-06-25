@@ -27,7 +27,7 @@ class ProjectVersion
     /**
      * @ORM\Column(name="name", type="integer")
      */
-    private $name;
+    private $name = "1";
 
     /**
      * @ORM\ManyToOne(targetEntity="Project")

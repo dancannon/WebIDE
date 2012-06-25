@@ -138,6 +138,7 @@ class Project
     public function setVersion($version)
     {
         $this->version = $version;
+        $version->setProject($this);
     }
 
     public function getCurrentVersion()

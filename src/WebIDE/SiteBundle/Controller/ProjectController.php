@@ -23,7 +23,7 @@ class ProjectController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv AND fv.id = pv");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE fv.id = pv");
 
         $projects = $query->getResult();
 
@@ -63,7 +63,7 @@ class ProjectController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE p.id = :id AND fv.id = pv");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
         $query->setParameter("id", $id);
 
         $project = $query->getResult();
@@ -94,7 +94,7 @@ class ProjectController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE p.id = :id AND fv.id = :version");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = :version WHERE p.id = :id ");
         $query->setParameter("id", $id);
         $query->setParameter("version", $version);
 
@@ -127,7 +127,7 @@ class ProjectController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE p.id = :id AND fv.id = pv");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
         $query->setParameter("id", $id);
 
         $project = $query->getResult();
@@ -188,7 +188,7 @@ class ProjectController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE p.id = :id AND fv.id = pv");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
         $query->setParameter("id", $id);
 
         $project = $query->getResult();
@@ -241,7 +241,7 @@ class ProjectController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE p.id = :id AND fv.id = pv");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
         $query->setParameter("id", $id);
 
         $project = $query->getResult();
@@ -274,7 +274,7 @@ class ProjectController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE p.id = :id AND fv.id = pv");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
         $query->setParameter("id", $id);
 
         $project = $query->getResult();
@@ -304,17 +304,18 @@ class ProjectController extends Controller
         $request = $this->getRequest();
         $newVersion = false;
 
-        $versionRequest = $request->get("current_version", $project->getVersion()->getId());
-
         if(!$project->getVersion()) {
             $project->setVersion(new ProjectVersion());
-        } elseif ($project->getVersion()->getId() !== $versionRequest) {
-            $version = new ProjectVersion();
-            $version->setName($project->getVersion()->getName() + 1);
-            $version->setProject($project);
-            $project->setVersion($version);
+        } else {
+            $versionRequest = $request->get("current_version", $project->getVersion()->getId());
 
-            $newVersion = true;
+            if ($project->getVersion()->getId() !== $versionRequest) {
+                $version = new ProjectVersion();
+                $version->setName($project->getVersion()->getName() + 1);
+                $project->setVersion($version);
+
+                $newVersion = true;
+            }
         }
 
         //Init hash
