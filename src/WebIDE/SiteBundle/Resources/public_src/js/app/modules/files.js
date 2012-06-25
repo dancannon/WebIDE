@@ -1,11 +1,11 @@
-define(["app/webide","use!backbone", "app/modules/modals", "jquery", "jqueryui", "plugins/jquery.contextMenu"],
+define(["app/webide","use!backbone", "app/modules/project", "app/modules/versions", "jquery", "jqueryui", "use!plugins/backbone.relational", "plugins/jquery.contextMenu"],
 
-    function (webide, Backbone, Modals) {
+    function (webide, Backbone, Project, Versions) {
         // Create a new module
         var Files = webide.module(),
             app = webide.app;
 
-        Files.Model = Backbone.Model.extend({
+        Files.Model = Backbone.RelationalModel.extend({
             defaults:{
                 active:true,
                 selected:false,
@@ -51,70 +51,71 @@ define(["app/webide","use!backbone", "app/modules/modals", "jquery", "jqueryui",
             initialize: function() {
                 var that = this;
 
-                app.on("file:create", function(args) {
-                    if(!that.any(function(file) {
-                        return (file.get('name') === args.name) && (file.get('type') === args.type);
-                    })) {
-                        args.project = app.project;
+                app.on("application:init", function() {
+                    console.log("init");
+                    app.on("file:create", function(args) {
+                        console.log("Creating");
+                        if(!that.any(function(file) {
+                            return (file.get('name') === args.name) && (file.get('type') === args.type);
+                        })) {
+                            args.project = app.project;
 
-                        app.project.get('files').map(function(file) {
-                            if(file.get("type") === args.type && file.isSelected()) {
-                                file.save({"selected": false});
-                            }
-                        });
+                            var currSelected = app.project.get('files').getSelected(args.type);
+                            if(currSelected) currSelected.save("selected", false);
 
-                        args.selected = true;
+                            args.selected = true;
 
-                        var newfile = that.create(args);
+                            var newfile = that.create(args);
 
-                        app.trigger("file:select", {
-                            file: newfile,
-                            type: newfile.get("type")
-                        });
-
-                    } else {
-                        app.trigger("application:notify", {
-                            text: "A file already exists with that name",
-                            type: "error"
-                        });
-                    }
-                });
-                app.on("file:import", function(args) {
-                    if(!that.any(function(file) {
-                        return (file.get('name') === args.name) && (file.get('type') === args.type);
-                    })) {
-                        //Load file
-                        $.getJSON('/resource/' + encodeURI(args.url))
-                            .success(function(data) {
-                                args.project = app.project;
-                                args.resource = args.url;
-                                args.content = data.content;
-
-                                var newfile = that.create(args);
-
-                                app.project.get('files').map(function(file) {
-                                    if(file.get("type") === newfile.get("type") && file !== newfile) {
-                                        file.save("selected", false);
-                                    }
-                                });
-
-                                app.trigger("file:select", {
-                                    file: newfile,
-                                    type: newfile.get("type")
-                                });
-                            })
-                            .error(function(data) {
-                                app.trigger("application:notify", {
-                                    message: data.message,
-                                    type: "error"
-                                });
+                            app.trigger("file:select", {
+                                file: newfile,
+                                type: newfile.get("type")
                             });
-                    } else {
-                        app.trigger("application:notify", {
-                            text: "A file already exists with that name",
-                            type: "error"
-                        });
-                    }
+
+                        } else {
+                            app.trigger("application:notify", {
+                                text: "A file already exists with that name",
+                                type: "error"
+                            });
+                        }
+                    });
+                    app.on("file:import", function(args) {
+                        if(!that.any(function(file) {
+                            return (file.get('name') === args.name) && (file.get('type') === args.type);
+                        })) {
+                            //Load file
+                            $.getJSON('/resource/' + encodeURI(args.url))
+                                .success(function(data) {
+                                    args.project = app.project;
+                                    args.resource = args.url;
+                                    args.content = data.content;
+
+                                    var newfile = that.create(args);
+
+                                    app.project.get('files').map(function(file) {
+                                        if(file.get("type") === newfile.get("type") && file !== newfile) {
+                                            file.set("selected", false);
+                                        }
+                                    });
+
+                                    app.trigger("file:select", {
+                                        file: newfile,
+                                        type: newfile.get("type")
+                                    });
+                                })
+                                .error(function(data) {
+                                    app.trigger("application:notify", {
+                                        message: data.message,
+                                        type: "error"
+                                    });
+                                });
+                        } else {
+                            app.trigger("application:notify", {
+                                text: "A file already exists with that name",
+                                type: "error"
+                            });
+                        }
+                    });
                 });
             },
 

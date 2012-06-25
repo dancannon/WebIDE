@@ -20,8 +20,11 @@ define(["jquery", "use!handlebars", "use!moment", "use!templates"],
                 return context;
             }
         });
-        Handlebars.registerHelper('route', function(route, params) {
+        Handlebars.registerHelper('route', function(route) {
             return Routing.generate(route);
+        });
+        Handlebars.registerHelper('url', function(url) {
+            return globals.baseUrl + url;
         });
         Handlebars.registerHelper("debug", function(optionalValue) {
             console.log("####################");

@@ -149,18 +149,13 @@ function(webide, Backbone, Files) {
             var model = app.project.get('files').getByCid(this.$el.find('#cid').val());
 
             if(model) {
-                var selectedFile = app.project.get("files").find(function(file) {
-                    return file.isActive(file.get("type"));
-                });
+                var currSelected = app.project.get('files').getSelected(model.get('type') );
+                if(currSelected) currSelected.save("selected", false);
 
-                if(selectedFile) {
-                    selectedFile.save({"selected": true});
-
-                    app.trigger("file:select", {
-                        file: selectedFile,
-                        type: selectedFile.get("type")
-                    });
-                }
+//                app.trigger("file:select", {
+//                    file: selectedFile,
+//                    type: selectedFile.get("type")
+//                });
 
                 model.destroy();
             }

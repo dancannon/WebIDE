@@ -44,12 +44,6 @@
         {
             "package": "friendsofsymfony/rest-bundle",
             "version": "dev-master",
-            "alias-pretty-version": "0.7.x-dev",
-            "alias-version": "0.7.9999999.9999999-dev"
-        },
-        {
-            "package": "friendsofsymfony/rest-bundle",
-            "version": "dev-master",
             "source-reference": "f279c12d1e375fc3a63255589b5959015238607b",
             "commit-date": "1340563368"
         },
@@ -58,12 +52,6 @@
             "version": "dev-master",
             "source-reference": "6200cecef5e1ae9c473d00220800b5cc2d09c7b1",
             "commit-date": "1340289625"
-        },
-        {
-            "package": "gedmo/doctrine-extensions",
-            "version": "dev-master",
-            "alias-pretty-version": "2.3.x-dev",
-            "alias-version": "2.3.9999999.9999999-dev"
         },
         {
             "package": "gedmo/doctrine-extensions",
@@ -118,8 +106,8 @@
         {
             "package": "kriswallsmith/buzz",
             "version": "dev-master",
-            "source-reference": "5c7d0523501f02c766166b08ac98613bde0254b5",
-            "commit-date": "1337973884"
+            "source-reference": "62a5a27fcfa5569010483f0f164e67b32e6f6b80",
+            "commit-date": "1340650898"
         },
         {
             "package": "monolog/monolog",
@@ -170,12 +158,6 @@
         {
             "package": "swiftmailer/swiftmailer",
             "version": "dev-master",
-            "alias-pretty-version": "4.1.x-dev",
-            "alias-version": "4.1.9999999.9999999-dev"
-        },
-        {
-            "package": "swiftmailer/swiftmailer",
-            "version": "dev-master",
             "source-reference": "0173abd7bb539bc5dd0b823b06b46636121384e9",
             "commit-date": "1340373948"
         },
@@ -188,13 +170,25 @@
         {
             "package": "symfony/monolog-bundle",
             "version": "dev-master",
-            "source-reference": "0b5046d3d1ef93cd59ceabfa37de2665f5118c7f",
-            "commit-date": "1339708477"
+            "alias-pretty-version": "2.1.x-dev",
+            "alias-version": "2.1.9999999.9999999-dev"
+        },
+        {
+            "package": "symfony/monolog-bundle",
+            "version": "dev-master",
+            "source-reference": "660a1aeaf93e8ffdc34c27b3a82dc47195ad1d8d",
+            "commit-date": "1340609637"
         },
         {
             "package": "symfony/swiftmailer-bundle",
             "version": "dev-master",
-            "source-reference": "d05c9c514a631ee688c53c4cc5505da757bd50d3",
+            "alias-pretty-version": "2.1.x-dev",
+            "alias-version": "2.1.9999999.9999999-dev"
+        },
+        {
+            "package": "symfony/swiftmailer-bundle",
+            "version": "dev-master",
+            "source-reference": "v2.1.0-BETA1",
             "commit-date": "1340144744"
         },
         {
@@ -212,8 +206,8 @@
         {
             "package": "symfony/symfony",
             "version": "dev-master",
-            "source-reference": "v2.1.0-BETA1",
-            "commit-date": "1340300540"
+            "source-reference": "58436de19583c6e74392f6d369c61b8642e74c72",
+            "commit-date": "1340635461"
         },
         {
             "package": "twig/extensions",

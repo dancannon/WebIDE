@@ -53,19 +53,30 @@ class FileController extends Controller
         $file = new File();
 
         //Find project
-        $project = $this->getDoctrine()->getRepository("WebIDESiteBundle:Project")->find($request->get('project'));
-        if(!$project) {
+        $projectRData = $request->get('project');
+        $projectId = is_array($projectRData) ? $projectRData['id'] : $projectRData;
+
+        $em = $this->getDoctrine()->getManager();
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
+        $query->setParameter("id", $projectId);
+
+        $project = $query->getResult();
+
+        if (!$project || !isset($project[0])) {
             throw $this->createNotFoundException('Project not found.');
         }
+
+        $project = $project[0];
 
         $file->setActive($request->get('active'));
         $file->setSelected($request->get('selected'));
         $file->setResource($request->get('resource'));
         $file->setOrder($request->get('order'));
-        $file->setProject($project);
         $file->setType($request->get('type'));
         $file->setName($request->get('name'));
         $file->setContent($request->get('content'));
+        $file->setProject($project);
+        $file->setVersion($project->getVersion());
 
         //TODO: Add validation
 
@@ -95,19 +106,28 @@ class FileController extends Controller
         }
 
         //Find project
-        $project = $this->getDoctrine()->getRepository("WebIDESiteBundle:Project")->find($request->get('project'));
-        if(!$project) {
+        $projectId = is_object($request->get('project')) ? $request->get('project')->id : $request->get('project');
+        $em = $this->getDoctrine()->getManager();
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
+        $query->setParameter("id", $projectId);
+
+        $project = $query->getResult();
+
+        if (!$project || !isset($project[0])) {
             throw $this->createNotFoundException('Project not found.');
         }
+
+        $project = $project[0];
 
         $file->setActive($request->get('active'));
         $file->setSelected($request->get('selected'));
         $file->setResource($request->get('resource'));
         $file->setOrder($request->get('order'));
-        $file->setProject($project);
         $file->setType($request->get('type'));
         $file->setName($request->get('name'));
         $file->setContent($request->get('content'));
+        $file->setProject($project);
+        $file->setVersion($project->getVersion());
 
         //TODO: Add validation
 

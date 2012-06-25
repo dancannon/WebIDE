@@ -17,6 +17,7 @@ define(["app/webide","use!backbone","app/modules/modals","app/modules/versions"]
                 "click .import": "import_file",
                 "click .run": "run",
                 "click .save": "save",
+                "click .new_version": "new_version",
                 "click .download": "download"
             },
 
@@ -52,6 +53,28 @@ define(["app/webide","use!backbone","app/modules/modals","app/modules/versions"]
                 app.project.save().success(function() {
                     app.trigger("app:save");
                     app.trigger("app:reload");
+                });
+            },
+            new_version: function() {
+                var  id = app.project.id;
+                app.project.fetch({
+                    url: globals.baseUrl + '/projects/' + id + '/version'
+                }).error(function(resp) {
+                    if (resp.status === 404) {
+                        app.trigger("application:notify", {
+                            text: "That project could not be found",
+                            type: "error",
+                            layout: "top"
+                        });
+                        app.router.navigate('/', {
+                            trigger: true
+                        });
+                    }
+                }).success(function(resp) {
+                        var version = app.project.get('version').get('id');
+                    app.router.navigate('/' + id + '/' + version, {
+                        trigger: true
+                    })
                 });
             },
             download: function() {

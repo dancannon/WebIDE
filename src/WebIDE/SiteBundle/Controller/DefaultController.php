@@ -32,7 +32,7 @@ class DefaultController extends Controller
      * @Route("/{version}/{id}", requirements={"version" = "\d+", "id" = "\d+"})
      * @Template("WebIDESiteBundle:Default:index.html.twig")
      */
-    public function viewVersionAction($id)
+    public function viewVersionAction($id, $version)
     {
         return array();
     }

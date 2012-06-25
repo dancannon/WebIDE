@@ -1,4 +1,4 @@
-define(["app/webide", "use!backbone", "app/modules/files", "app/modules/versions"],
+define(["app/webide", "use!backbone", "app/modules/files", "app/modules/versions", "use!plugins/backbone.relational"],
 
     function (webide, Backbone, Files, Versions) {
 
@@ -6,26 +6,41 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/versions
         var Project = webide.module(),
             app = webide.app;
 
-        Project.Model = Backbone.Model.extend({
+        Project.Model = Backbone.RelationalModel.extend({
             defaults:{
                 id: null,
-                files: new Files.Collection(),
                 hash: "",
-                version: new Versions.Model(),
-                versions: new Versions.Collection(),
                 created: new Date(),
                 updated: new Date()
             },
 
-            urlRoot: globals.baseUrl + '/projects',
+            relations: [{
+                type: Backbone.HasMany,
+                key: 'files',
+                relatedModel: Files.Model,
+                collectionType: Files.Collection,
+                reverseRelation: {
+                    key: 'project',
+                    includeInJSON: 'id'
+                }
+            },
+            {
+                type: Backbone.HasOne,
+                key: 'version',
+                relatedModel: Versions.Model
+            },
+            {
+                type: Backbone.HasMany,
+                key: 'versions',
+                relatedModel: Versions.Model,
+                collectionType: Versions.Collection,
+                reverseRelation: {
+                    key: 'project',
+                    includeInJSON: 'id'
+                }
+            }],
 
-            parse: function(response) {
-                response.files = new Files.Collection(response.files);
-                response.version = new Versions.Model(response.version);
-                response.versions = new Versions.Collection(response.versions);
-
-                return response;
-            }
+            urlRoot: globals.baseUrl + '/projects'
         });
 
         Project.RecentProjects = Backbone.Collection.extend({

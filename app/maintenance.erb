@@ -1,0 +1,109 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>Down for maintenance - WebIDE</title>
+
+    <!-- Application styles -->
+    <style type="text/css">
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            line-height: 18px;
+            color: #333333;
+            background-color: #ffffff;
+        }
+        a {
+            color: #0088cc;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #005580;
+            text-decoration: underline;
+        }
+        .clearfix {
+            *zoom: 1;
+        }
+        .clearfix:before,
+        .clearfix:after {
+            display: table;
+            content: "";
+        }
+        .clearfix:after {
+            clear: both;
+        }
+        body {
+            background: #797C85;
+        }
+        .container-small {
+            width: 600px;
+            top: 50%;
+            left: 50%;
+            margin-left: -300px;
+            /* half of the width */
+
+            margin-top: -150px;
+            /* half of the height */
+
+            position: fixed;
+            -webkit-box-shadow: 0px 0px 2px #000000;
+            -moz-box-shadow: 0px 0px 2px #000000;
+            box-shadow: 0px 0px 2px #000000;
+        }
+        .container-small .header {
+            background-color: #39393d;
+            background-image: -moz-linear-gradient(top, #2f3033, #47474c);
+            background-image: -ms-linear-gradient(top, #2f3033, #47474c);
+            background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#2f3033), to(#47474c));
+            background-image: -webkit-linear-gradient(top, #2f3033, #47474c);
+            background-image: -o-linear-gradient(top, #2f3033, #47474c);
+            background-image: linear-gradient(top, #2f3033, #47474c);
+            background-repeat: repeat-x;
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#2f3033', endColorstr='#47474c', GradientType=0);
+            height: 50px;
+            width: 100%;
+        }
+        .container-small .header .logo {
+            width: 150px;
+            margin: 0px 20px 0;
+            background: url('img/logo.png') no-repeat left center;
+            padding-left: 25px;
+        }
+        .container-small .header .logo h1 {
+            font-weight: bold;
+            color: black;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 30px rgba(255, 255, 255, 0.125);
+            -webkit-transition: all .2s linear;
+            -moz-transition: all .2s linear;
+            transition: all .2s linear;
+        }
+        .container-small .content {
+            height: 100%;
+            background: #FFF;
+            padding: 10px 10px 0 10px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container-small">
+    <div id="main">
+        <div class="header clearfix">
+            <div class="logo">
+                <h1>WebIDE</h1>
+            </div>
+        </div>
+        <div class="content clearfix">
+            <h1>WebIDE is currently down for maintenance</h1>
+            <p>The system is down for <%= reason ? reason : "maintenance" %> as of <%= Time.now.strftime("%H:%M %Z")%></p>
+            <p> It'll be back <%= deadline ? deadline : "shortly" %></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,11 +1,11 @@
-define(["app/webide","use!backbone", "app/modules/modals", "jquery", "jqueryui"],
+define(["app/webide","use!backbone", "app/modules/modals", "jquery", "jqueryui", "use!plugins/backbone.relational"],
 
     function (webide, Backbone, Modals) {
         // Create a new module
         var Versions = webide.module(),
             app = webide.app;
 
-        Versions.Model = Backbone.Model.extend({
+        Versions.Model = Backbone.RelationalModel.extend({
             defaults:{
                 name: 0
             }

@@ -63,7 +63,7 @@ class ProjectController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f WITH f.version = p.version WHERE p.id = :id");
         $query->setParameter("id", $id);
 
         $project = $query->getResult();
@@ -85,7 +85,7 @@ class ProjectController extends Controller
 
 
     /**
-     * @Rest\Get("/projects/{id}/{version}")
+     * @Rest\Get("/projects/{id}/{version}", requirements={"version" = "\d+", "id" = "\d+"})
      */
     public function getProjectVersionAction($id, $version)
     {
@@ -94,11 +94,10 @@ class ProjectController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = :version WHERE p.id = :id ");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f WITH f.version = p.version WHERE p.id = :id AND :version MEMBER OF p.versions");
         $query->setParameter("id", $id);
         $query->setParameter("version", $version);
 
-        $query->execute();
         $project = $query->getResult();
 
         if (!$project || !isset($project[0])) {
@@ -118,7 +117,7 @@ class ProjectController extends Controller
 
 
     /**
-     * @Rest\Post("/projects/{id}/version")
+     * @Rest\Get("/projects/{id}/version")
      */
     public function newProjectVersionAction($id)
     {
@@ -126,8 +125,9 @@ class ProjectController extends Controller
             throw new HttpException(403);
         }
 
+        // Fetch the project from the database
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f WITH f.version = p.version WHERE p.id = :id");
         $query->setParameter("id", $id);
 
         $project = $query->getResult();
@@ -138,16 +138,19 @@ class ProjectController extends Controller
 
         $project = $project[0];
 
+        // Create the new version
         $version = new ProjectVersion();
         $version->setName($project->getVersion()->getName() + 1);
         $project->setVersion($version);
 
+        // Clone each file and set its version to the new version
         $newFiles = array();
-
-        /**
-         * @var File $file
-         */
         foreach($project->getFiles() as $file) {
+            // If the file is not of the same version as the current version skip file
+            if($file->getVersion() && $file->getVersion()->getId() !== $project->getVersion()->getId()) {
+                continue;
+            }
+
             $newFile = new File();
 
             $newFile->setActive($file->isActive());
@@ -165,11 +168,13 @@ class ProjectController extends Controller
 
         $project->setFiles($newFiles);
 
-        $em->getManager()->persist($project);
-        $em->getManager()->flush();
+        $em->persist($project);
+        $em->flush();
 
+        // Set the current version of the project (Not stored in db)
         $project->setCurrentVersion($project->getVersion()->getId());
 
+        //
         $view = View::create()
             ->setStatusCode(200)
             ->setData($project);
@@ -178,8 +183,7 @@ class ProjectController extends Controller
     }
 
     /**
-     * @Rest\Get
-     * @Route("/projects/{id}/download")
+     * @Rest\Get("/projects/{id}/download")
      */
     public function downloadProjectAction($id)
     {
@@ -188,7 +192,7 @@ class ProjectController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f WITH f.version = p.version WHERE p.id = :id");
         $query->setParameter("id", $id);
 
         $project = $query->getResult();
@@ -241,7 +245,7 @@ class ProjectController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f WITH f.version = p.version WHERE p.id = :id");
         $query->setParameter("id", $id);
 
         $project = $query->getResult();
@@ -274,7 +278,7 @@ class ProjectController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f WITH f.version = p.version WHERE p.id = :id");
         $query->setParameter("id", $id);
 
         $project = $query->getResult();
@@ -294,7 +298,7 @@ class ProjectController extends Controller
         return $this->get('fos_rest.view_handler')->handle($view);
     }
 
-    protected function createProjectFromRequest(Project $project)
+    protected function createProjectFromRequest(Project $project, $newVersion = false)
     {
         if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
             throw new HttpException(403);
@@ -302,17 +306,17 @@ class ProjectController extends Controller
 
         $em = $this->getDoctrine()->getManager();
         $request = $this->getRequest();
-        $newVersion = false;
+        $version = $project->getVersion();
 
-        if(!$project->getVersion()) {
-            $project->setVersion(new ProjectVersion());
+        // Create the new version
+        if(!$version) {
+            $version = new ProjectVersion();
         } else {
+            // If the current version is not the same as the db project then create a new version
             $versionRequest = $request->get("current_version", $project->getVersion()->getId());
-
             if ($project->getVersion()->getId() !== $versionRequest) {
                 $version = new ProjectVersion();
                 $version->setName($project->getVersion()->getName() + 1);
-                $project->setVersion($version);
 
                 $newVersion = true;
             }
@@ -324,30 +328,37 @@ class ProjectController extends Controller
         //Create files
         $files = array();
         foreach ($request->get('files', array()) as $fileData) {
-            if(is_array($fileData)) {
-                if($newVersion) {
-                    $file = new File();
-                } elseif(isset($fileData['id'])) {
-                    $file = $this->getDoctrine()->getRepository("WebIDESiteBundle:File")->find(array('id' => $fileData['id']));
-                    if(!$file) {
-                        $file = new File();
-                    }
-                } else {
-                    $file = new File();
-                }
+//            if(is_array($fileData)) {
+            // If a new version is requested create a new file
+            if($newVersion) $file = new File();
 
-                $file->setActive($fileData['active']);
-                $file->setSelected($fileData['selected']);
-                $file->setResource($fileData['resource']);
-                $file->setOrder($fileData['order']);
-                $file->setType($fileData['type']);
-                $file->setName($fileData['name']);
-                $file->setContent($fileData['content']);
-                $file->setProject($project);
-                $file->setVersion($project->getVersion());
-            } else {
-                $file = $this->getDoctrine()->getRepository("WebIDESiteBundle:File")->find(array('id' => $fileData));
+            // Fetch the file from the db
+            if(isset($fileData['id'])) {
+                $file = $this->getDoctrine()->getRepository("WebIDESiteBundle:File")->find(array('id' => $fileData['id']));
+
+                // If the file is not of the same version as the current version skip file
+                if($file->getVersion() && $file->getVersion()->getId() !== $project->getVersion()->getId()) {
+                    continue;
+                }
             }
+
+            // If the file is still not created then create it now
+            if(!isset($file) || !$file) {
+                $file = new File();
+            }
+
+            $file->setActive($fileData['active']);
+            $file->setSelected($fileData['selected']);
+            $file->setResource($fileData['resource']);
+            $file->setOrder($fileData['order']);
+            $file->setType($fileData['type']);
+            $file->setName($fileData['name']);
+            $file->setContent($fileData['content']);
+            $file->setProject($project);
+            $file->setVersion($project->getVersion());
+//            } else {
+//                $file = $this->getDoctrine()->getRepository("WebIDESiteBundle:File")->find(array('id' => $fileData));
+//            }
 
             $files[] = $file;
 
@@ -357,6 +368,7 @@ class ProjectController extends Controller
         }
 
         $project->setHash(hash_final($hash));
+        $project->setVersion($version);
 
         return $project;
     }

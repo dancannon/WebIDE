@@ -19,7 +19,7 @@
         exports = module.exports = Backbone;
     }
     else {
-        var _ = window._;
+        _ = window._;
         Backbone = window.Backbone;
         exports = window;
     }
@@ -120,8 +120,13 @@
         this._collections = [];
         this._reverseRelations = [];
         this._subModels = [];
+        this._modelScopes = [ exports ];
     };
     _.extend( Backbone.Store.prototype, Backbone.Events, {
+        addModelScope: function( scope ) {
+            this._modelScopes.push( scope );
+        },
+
         /**
          * Add a set of subModelTypes to the store, that can be used to resolve the '_superModel'
          * for a model later in 'setupSuperModel'.
@@ -244,10 +249,20 @@
          * @return {Object}
          */
         getObjectByName: function( name ) {
-            var type = _.reduce( name.split( '.' ), function( memo, val ) {
-                return memo[ val ];
-            }, exports);
-            return type !== exports ? type: null;
+            var parts = name.split( '.' ),
+                type = null;
+
+            _.find( this._modelScopes, function( scope ) {
+                type = _.reduce( parts, function( memo, val ) {
+                    return memo[ val ];
+                }, scope );
+
+                if ( type && type !== scope ) {
+                    return true;
+                }
+            }, this );
+
+            return type;
         },
 
         _createCollection: function( type ) {
@@ -370,7 +385,7 @@
 
         this.key = this.options.key;
         this.keySource = this.options.keySource || this.key;
-        this.keyDestination = this.options.keyDestination || this.options.keySource || this.key;
+        this.keyDestination = this.options.keyDestination || this.keySource || this.key;
 
         // 'exports' should be the global object where 'relatedModel' can be found on if given as a string.
         this.relatedModel = this.options.relatedModel;
@@ -563,7 +578,7 @@
         sanitizeOptions: function( options ) {
             options = options ? _.clone( options ) : {};
             if ( options.silent ) {
-                options = _.extend( {}, options, { silentChange: true } );
+                options.silentChange = true;
                 delete options.silent;
             }
             return options;
@@ -578,7 +593,7 @@
         unsanitizeOptions: function( options ) {
             options = options ? _.clone( options ) : {};
             if ( options.silentChange ) {
-                options = _.extend( {}, options, { silent: true } );
+                options.silent = true;
                 delete options.silentChange;
             }
             return options;
@@ -1079,7 +1094,8 @@
             updateRelations: function( options ) {
                 if ( this._isInitialized && !this.isLocked() ) {
                     _.each( this._relations, function( rel ) {
-                        var val = this.attributes[ rel.key ];
+                        // Update from data in `rel.keySource` if set, or `rel.key` otherwise
+                        var val = this.attributes[ rel.keySource ] || this.attributes[ rel.key ];
                         if ( rel.related !== val ) {
                             this.trigger( 'relational:change:' + rel.key, this, val, options || {} );
                         }

@@ -150,7 +150,7 @@ require([
                 }).ajaxStop(function() {
                     app.trigger("application:loading:stop");
                 }).ajaxError(function(e, xhr, settings) {
-                    if(xhr.status === 503) {
+                    if(xhr.status === 403) {
                         app.trigger("application:notify", {
                             text: "You are not logged in, <a href=\"" + Routing.generate('fos_user_security_login') + "\" data-bypass='true'>Click here to log in</a>",
                             type: "error",
@@ -186,8 +186,7 @@ require([
 
             view:function (id) {
                 app.project = new Project.Model({
-                    id: id,
-                    files: new Files.Collection()
+                    id: id
                 });
 
                 var layout = webide.useLayout("workspace", {
@@ -220,7 +219,6 @@ require([
             viewVersion :function (id, version) {
                 app.project = new Project.Model({
                     id: id,
-                    files: new Files.Collection(),
                     current_version: version
                 });
 
