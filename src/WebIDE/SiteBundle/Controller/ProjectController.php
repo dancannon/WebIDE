@@ -21,7 +21,8 @@ class ProjectController extends Controller
         $this->checkPermission();
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE fv.id = pv");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE fv.id = pv AND p.user = :user");
+        $query->setParameter("user", $this->get('security.context')->getToken()->getUser());
 
         $projects = $query->getResult();
 
@@ -40,8 +41,9 @@ class ProjectController extends Controller
         $this->checkPermission();
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p FROM WebIDESiteBundle:Project p ORDER BY p.updated DESC");
+        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE fv.id = pv AND p.user = :user ORDER BY p.updated DESC");
         $query->setMaxResults(5);
+        $query->setParameter("user", $this->get('security.context')->getToken()->getUser());
 
         $projects = $query->execute();
 
@@ -89,10 +91,6 @@ class ProjectController extends Controller
      */
     public function getProjectVersionAction($id, $version)
     {
-        if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(403, "Unauthorized");
-        }
-
         $em = $this->getDoctrine()->getManager();
 
         // Find version
