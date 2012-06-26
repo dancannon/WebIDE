@@ -56,12 +56,6 @@ module.exports = function (grunt) {
             }
         },
 
-        handlebars: {
-            'public_src/js/templates.js': [
-                "public_src/js/templates/*.hbs"
-            ]
-        },
-
         requirejs: {
             baseUrl: 'public_src/js/',
             optimize: "none",
@@ -157,14 +151,14 @@ module.exports = function (grunt) {
             },
 
             name: "app/main",
-            out: 'public_src/js/app-built.js'
+            out: '../../../../web/js/app.js'
         },
 
         concat: {
-            dist: {
-                src: ['public_src/js/app-built.js', 'public_src/js/templates.js'],
-                dest: '../../../../web/js/app.js'
-            }
+//            dist: {
+//                src: ['public_src/js/app-built.js'],
+//                dest: '../../../../web/js/app.js'
+//            }
         },
 
         uglify: {},
@@ -204,11 +198,11 @@ module.exports = function (grunt) {
 
         min: {
             app: {
-                src: ['<config:concat.dist.dest>'],
+                src: ['../../../../web/js/app.js'],
                 dest: '../../../../web/js/app.js'
             },
             require: {
-                src: ['public_src/js/vendors/almond.js'],
+                src: ['public_src/js/vendors/require.js'],
                 dest: '../../../../web/js/require.js'
             }
         },
@@ -233,8 +227,8 @@ module.exports = function (grunt) {
 
 
     grunt.registerTask("test", "lint");
-    grunt.registerTask("build", "lint clean:build requirejs concat less copy");
-    grunt.registerTask("release", "lint clean:build handlebars requirejs concat less copy min mincss clean:prod");
+    grunt.registerTask("build", "lint clean:build requirejs less copy");
+    grunt.registerTask("release", "lint clean:build requirejs less copy min mincss clean:prod");
 
     grunt.registerTask("default", "build");
 

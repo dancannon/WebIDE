@@ -9,32 +9,29 @@
 
 module.exports = function(grunt) {
     grunt.registerMultiTask("handlebars", "Compile underscore templates to JST file", function() {
+        var files = grunt.file.expandFiles(this.file.src),
+            target = this.file.dest,
+            namespace = this.data.namespace || "JST",
+            strip = this.data.strip,
+            contents = "";
 
-        var options = grunt.helper("options", this),
-            namespace = options.namespace || "JST",
-            files = grunt.file.expand(this.data);
+        if ( typeof strip === "string" ) {
+            strip = new RegExp( "^" + grunt.template.process( strip, grunt.config() ).replace( /[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&" ) );
+        }
 
-        grunt.file.write(this.target, grunt.helper("handlebars", files, namespace));
+        namespace = "this['" + namespace + "']";
+        contents = namespace + " = " + namespace + " || {};\n\n";
 
-        // Fail task if errors were logged.
+        files.forEach(function(filepath) {
+            var templateFunction = require("handlebars").precompile(grunt.file.read(filepath)).toString();
+            filepath = strip ? filepath.replace( strip, "" ) : filepath;
+
+            contents += namespace + "['" + filepath + "'] = " + templateFunction + "\n\n";
+        });
+
+        grunt.file.write(target, contents);
+
         if (grunt.errors) { return false; }
-
-        // Otherwise, print a success message.
-        grunt.log.writeln("File \"" + this.target + "\" created.");
-    });
-
-    grunt.registerHelper("handlebars", function(files, namespace) {
-        // Comes out looking like this["JST"] = this["JST"] || {};
-        var contents = namespace + " = " + namespace + " || {};\n\n";
-
-        // Compile the template and get the function source
-        contents += files ? files.map(function(filepath) {
-            var templateFunction =
-                require("handlebars").precompile(grunt.file.read(filepath));
-
-            return namespace + "['" + filepath + "'] = " + templateFunction;
-        }).join("\n\n") : "";
-
-        return contents;
+        grunt.log.writeln("File \"" + target + "\" created.");
     });
 };

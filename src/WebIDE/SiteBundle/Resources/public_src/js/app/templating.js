@@ -1,15 +1,10 @@
-define(["jquery", "use!handlebars", "use!moment", "use!templates"],
+define(["jquery", "use!handlebars", "use!moment"],
 
     function ($, Handlebars, moment) {
-        var JST;
         var hasSessionStorage = !!sessionStorage;
 
         //Init cache
-        if(!globals.debug) {
-            JST = window.JST = window.JST || {};
-        } else {
-            JST = {};
-        }
+        var JST = {};
 
         //Handlebars helpers
         Handlebars.registerHelper('date', function(context, block) {
@@ -20,24 +15,8 @@ define(["jquery", "use!handlebars", "use!moment", "use!templates"],
                 return context;
             }
         });
-        Handlebars.registerHelper('route', function(route) {
-            return Routing.generate(route);
-        });
         Handlebars.registerHelper('url', function(url) {
             return globals.baseUrl + url;
-        });
-        Handlebars.registerHelper("debug", function(optionalValue) {
-            console.log("####################");
-            console.log("Current Context");
-            console.log("====================");
-            console.log(this);
-
-            if (optionalValue) {
-                console.log("Value");
-                console.log("====================");
-                console.log(optionalValue);
-            }
-            console.log("####################");
         });
 
         return {

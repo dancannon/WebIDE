@@ -3,14 +3,12 @@ define([
     "jquery",
     "use!underscore",
     "use!backbone",
+    "use!handlebars",
     "app/templating",
     "use!plugins/backbone.layoutmanager"
 ],
 
-    function ($, _, Backbone, Templating) {
-        // Put application wide code here
-        var currentLayout;
-
+    function ($, _, Backbone, Handlebars, Templating) {
         Backbone.LayoutManager.configure({
             paths:{
                 layout: "/js/app/templates/layouts/",

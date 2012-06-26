@@ -52,9 +52,7 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
                 var that = this;
 
                 app.on("application:init", function() {
-                    console.log("init");
                     app.on("file:create", function(args) {
-                        console.log("Creating");
                         if(!that.any(function(file) {
                             return (file.get('name') === args.name) && (file.get('type') === args.type);
                         })) {
