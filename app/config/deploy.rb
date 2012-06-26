@@ -5,7 +5,8 @@ set :domain,     "webide.co"
 set :deploy_to,     "/var/www/#{domain}/"
 set :app_path,    "app"
 
-set :repository,   "file:///var/www/webide"
+#set :repository,   "file:///var/www/webide"
+set :repository,   "git@webide.co:webide.git"
 set :scm,          :git
 set :deploy_via,   :rsync_with_remote_cache
 
