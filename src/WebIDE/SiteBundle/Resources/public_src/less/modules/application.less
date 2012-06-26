@@ -17,6 +17,7 @@
             margin: 0px 20px 0;
             background: url('../img/logo.png') no-repeat left center;
             padding-left: 25px;
+            float: left;
         }
 
         .logo h1{
@@ -26,6 +27,34 @@
             -webkit-transition: all .2s linear;
             -moz-transition: all .2s linear;
             transition: all .2s linear;
+        }
+
+        .menu {
+            display: inline-block;
+            float: right;
+            position: relative;
+            right: 20px;
+        }
+
+        .menu .btn {
+            #gradient > .vertical(#2f3033, #222);
+            border-color: #2f3033 #222 #CCC;
+            border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+            color: #FFF;
+        }
+        .menu .btn:hover,
+        .menu .btn:active,
+        .menu .btn.active,
+        .menu .btn-.disabled,
+        .menu .btn[disabled] {
+            background-color: #222;
+        }
+        .menu .btn:active, .btn.active {
+            background-color: #2f3033 \9;
+        }
+
+        .caret {
+            border-top-color: #FFF;
         }
     }
 

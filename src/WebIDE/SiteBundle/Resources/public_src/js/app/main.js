@@ -193,7 +193,7 @@ require([
             index:function () {
                 var layout = webide.useLayout("new_project");
                 layout.setViews({
-                    "#main": [new App.Views.WelcomeView()]
+                    "#main": [new App.Views.NewProjectView()]
                 });
                 $("#container").html(layout.el);
                 layout.render().then(function () {

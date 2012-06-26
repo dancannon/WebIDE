@@ -18314,8 +18314,8 @@ function (webide, Backbone, Project, Files) {
     var App = webide.module(),
         app = webide.app;
 
-    App.Views.WelcomeView = Backbone.View.extend({
-        template: "app/welcome",
+    App.Views.NewProjectView = Backbone.View.extend({
+        template: "app/new_project",
         className: "container-small",
         keep: true,
 
@@ -18460,7 +18460,6 @@ define('app/modules/header',["app/webide","use!backbone","app/modules/modals","a
                     }
                 }).success(function(resp) {
                     var version = app.project.get('version').get('version_number');
-                        console.log(version);
                     app.router.navigate('/' + id + '/' + version, {
                         trigger: true
                     })
@@ -24784,7 +24783,7 @@ require([
             index:function () {
                 var layout = webide.useLayout("new_project");
                 layout.setViews({
-                    "#main": [new App.Views.WelcomeView()]
+                    "#main": [new App.Views.NewProjectView()]
                 });
                 $("#container").html(layout.el);
                 layout.render().then(function () {

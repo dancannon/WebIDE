@@ -5,8 +5,8 @@ function (webide, Backbone, Project, Files) {
     var App = webide.module(),
         app = webide.app;
 
-    App.Views.WelcomeView = Backbone.View.extend({
-        template: "app/welcome",
+    App.Views.NewProjectView = Backbone.View.extend({
+        template: "app/new_project",
         className: "container-small",
         keep: true,
 
