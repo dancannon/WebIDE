@@ -71,13 +71,18 @@ define(["app/webide","use!backbone","app/modules/modals","app/modules/versions"]
                         });
                     }
                 }).success(function(resp) {
-                        var version = app.project.get('version').get('id');
+                        var version = app.project.get('version').get('version_number');
                     app.router.navigate('/' + id + '/' + version, {
                         trigger: true
                     })
                 });
             },
             download: function() {
+                app.trigger("application:notify", {
+                    text: "This feature is currently not active",
+                    type: "information",
+                    layout: "top"
+                });
                 //TODO: Fix
 //                app.router.navigate("projects/" + webide.app.project.id + "/download", {trigger: false});
             },

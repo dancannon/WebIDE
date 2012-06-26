@@ -18,8 +18,9 @@
             <li><a class="new_version">New Version</a></li>
             {{#if versions}}
             <li class="divider"></li>
-            {{#each versions}}
-                <li><a href="/{{../project.id}}/{{id}}">Version #{{name}}</a></li>
+
+            {{debug}}{{#each versions}}
+                <li><a href="/{{../project.id}}/{{version_number}}">Version #{{version_number}}</a></li>
             {{/each}}
             {{/if}}
         </ul>

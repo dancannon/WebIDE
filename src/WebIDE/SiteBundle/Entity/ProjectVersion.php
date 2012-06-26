@@ -25,9 +25,9 @@ class ProjectVersion
     private $id;
 
     /**
-     * @ORM\Column(name="name", type="integer")
+     * @ORM\Column(name="version_number", type="integer")
      */
-    private $name = "1";
+    private $versionNumber = 1;
 
     /**
      * @ORM\ManyToOne(targetEntity="Project")
@@ -58,14 +58,19 @@ class ProjectVersion
         return $this->id;
     }
 
-    public function getName()
+    public function getVersionNumber()
     {
-        return $this->name;
+        return $this->versionNumber;
     }
 
-    public function setName($name)
+    public function setVersionNumber($versionNumber)
     {
-        $this->name = $name;
+        $this->versionNumber = $versionNumber;
+    }
+
+    public function incVersionNumber()
+    {
+        $this->versionNumber += 1;
     }
 
     public function getProject()
