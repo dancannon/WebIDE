@@ -243,6 +243,7 @@ class ProjectController extends Controller
         $em = $this->getDoctrine()->getManager();
 
         $project = new Project();
+        $project->setUser($this->get('security.context')->getToken()->getUser());
         $project = $this->createProjectFromRequest($project);
 
         //TODO: Add validation
