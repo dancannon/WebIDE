@@ -45,8 +45,7 @@ define([
                 // Create the new layout and set it as current.
                 this.layout = new Backbone.Layout({
                     template: name,
-                    className: "layout_" + name,
-                    id: "container"
+                    className: "layout layout_" + name
                 });
 
                 return this.layout;

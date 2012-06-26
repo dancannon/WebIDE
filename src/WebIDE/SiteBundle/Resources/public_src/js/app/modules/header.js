@@ -71,7 +71,7 @@ define(["app/webide","use!backbone","app/modules/modals","app/modules/versions"]
                         });
                     }
                 }).success(function(resp) {
-                        var version = app.project.get('version').get('version_number');
+                    var version = app.project.get('version').get('version_number');
                     app.router.navigate('/' + id + '/' + version, {
                         trigger: true
                     })

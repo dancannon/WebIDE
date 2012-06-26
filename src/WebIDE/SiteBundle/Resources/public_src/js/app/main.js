@@ -139,28 +139,47 @@ require([
 
                     $.noty(options);
                 });
-                app.on("application:loading:start", function() {
-                    $(".loading").fadeIn();
-                });
-                app.on("application:loading:stop", function() {
-                    $(".loading").fadeOut();
-                });
+
                 $(document).ajaxStart(function() {
-                    app.trigger("application:loading:start");
-                }).ajaxStop(function() {
-                    app.trigger("application:loading:stop");
+                    $(".loading").fadeIn();
+                }).ajaxComplete(function(xhr) {
+                        $(".loading").fadeOut();
                 }).ajaxError(function(e, xhr, settings) {
-                    if(xhr.status === 403) {
+                    if(xhr.status === 401) {
                         app.trigger("application:notify", {
-                            text: "You are not logged in, <a href=\"" + Routing.generate('fos_user_security_login') + "\" data-bypass='true'>Click here to log in</a>",
+                            text: "You are not logged in",
                             type: "error",
                             layout: "top",
                             closeOnSelfClick: false,
                             timeout: false,
-                            modal: true
-                        });
-                    } else {
+                            modal: true,
+                            buttons: [
+                                {text: 'Click here to log in', type: "btn", click: function($noty) {
+                                    window.location = globals.baseUrl + '/login';
 
+                                    $noty.close();
+                                }}
+                            ]
+                        });
+                    }
+                    if(xhr.status === 403) {
+                        app.trigger("application:notify", {
+                            text: "You are not allowed to view this page",
+                            type: "error",
+                            layout: "top",
+                            closeOnSelfClick: false,
+                            timeout: false,
+                            modal: true,
+                            buttons: [
+                                {text: 'Return to homepage', type: "btn", click: function($noty) {
+                                    app.router.navigate("/", {
+                                        trigger: true
+                                    });
+
+                                    $noty.close();
+                                }}
+                            ]
+                        });
                     }
                 });
 
@@ -172,13 +191,11 @@ require([
             },
 
             index:function () {
-                var layout = webide.useLayout("new_project", {
-                    id:"container"
-                });
+                var layout = webide.useLayout("new_project");
                 layout.setViews({
                     "#main": [new App.Views.WelcomeView()]
                 });
-                $("body").html(layout.el);
+                $("#container").html(layout.el);
                 layout.render().then(function () {
                     app.trigger("application:init");
                 });
@@ -189,15 +206,13 @@ require([
                     id: id
                 });
 
-                var layout = webide.useLayout("workspace", {
-                    id:"container"
-                });
+                var layout = webide.useLayout("workspace");
                 layout.setViews({
                     "#main": [new Header.Views.Main(), new Sidebar.Views.Main(), new Editor.Views.Main(), new Footer.Views.Main()],
                     "#modals": [new Modals.Views.NewFile(), new Modals.Views.ImportFile(), new Modals.Views.RenameFile(), new Modals.Views.DeleteFile(), new Modals.Views.HtmlConfig()]
                 });
 
-                $("body").html(layout.el);
+                $("#container").html(layout.el);
                 layout.render().then(function () {
                     app.trigger("application:init");
                 });
@@ -222,15 +237,13 @@ require([
                     current_version: version
                 });
 
-                var layout = webide.useLayout("workspace", {
-                    id:"container"
-                });
+                var layout = webide.useLayout("workspace");
                 layout.setViews({
                     "#main": [new Header.Views.Main(), new Sidebar.Views.Main(), new Editor.Views.Main(), new Footer.Views.Main()],
                     "#modals": [new Modals.Views.NewFile(), new Modals.Views.ImportFile(), new Modals.Views.RenameFile(), new Modals.Views.DeleteFile(), new Modals.Views.HtmlConfig()]
                 });
 
-                $("body").html(layout.el);
+                $("#container").html(layout.el);
                 layout.render().then(function () {
                     // Trigger application events
                     app.trigger("application:init");

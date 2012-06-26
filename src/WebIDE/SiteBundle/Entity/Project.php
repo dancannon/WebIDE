@@ -13,7 +13,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @ORM\Table(name="projects")
  * @ORM\Entity
  */
-class Project
+class Project implements OwnableEntity
 {
     /**
      * @var integer $id
@@ -50,6 +50,11 @@ class Project
      * @ORM\Column(name="hash", type="string", length=255)
      */
     private $hash;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="User")
+     */
+    private $user;
 
 
     /**
@@ -178,8 +183,18 @@ class Project
         return $this->hash;
     }
 
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    public function setUser(User $user)
+    {
+        $this->user = $user;
+    }
+
     /**
-     * @return \WebIDE\SiteBundle\Entity\datetime
+     * @return \datetime
      */
     public function getCreated()
     {
@@ -187,7 +202,7 @@ class Project
     }
 
     /**
-     * @param \WebIDE\SiteBundle\Entity\datetime $created
+     * @param \datetime $created
      */
     public function setCreated($created)
     {
@@ -195,7 +210,7 @@ class Project
     }
 
     /**
-     * @return \WebIDE\SiteBundle\Entity\datetime
+     * @return \datetime
      */
     public function getUpdated()
     {
@@ -203,7 +218,7 @@ class Project
     }
 
     /**
-     * @param \WebIDE\SiteBundle\Entity\datetime $updated
+     * @param \datetime $updated
      */
     public function setUpdated($updated)
     {

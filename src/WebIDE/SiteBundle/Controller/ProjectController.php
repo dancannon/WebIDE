@@ -6,8 +6,8 @@ use WebIDE\SiteBundle\Entity\ProjectVersion;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use WebIDE\SiteBundle\Entity\File;
-use Symfony\Component\HttpFoundation\Request;
 use WebIDE\SiteBundle\Entity\Project;
+use WebIDE\SiteBundle\Entity\OwnableEntity;
 use FOS\RestBundle\View\View;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use JMS\SecurityExtraBundle\Annotation\Secure;
@@ -18,9 +18,7 @@ class ProjectController extends Controller
 {
     public function getProjectsAction()
     {
-        if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(403, "Unauthorized");
-        }
+        $this->checkPermission();
 
         $em = $this->getDoctrine()->getManager();
         $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE fv.id = pv");
@@ -39,9 +37,7 @@ class ProjectController extends Controller
      */
     public function getRecentProjectsAction()
     {
-        if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(403, "Unauthorized");
-        }
+        $this->checkPermission();
 
         $em = $this->getDoctrine()->getManager();
         $query = $em->createQuery("SELECT p FROM WebIDESiteBundle:Project p ORDER BY p.updated DESC");
@@ -58,10 +54,6 @@ class ProjectController extends Controller
 
     public function getProjectAction($id)
     {
-        if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(403, "Unauthorized");
-        }
-
         $em = $this->getDoctrine()->getManager();
         $query = $em->createQuery("
             SELECT p, f
@@ -78,9 +70,11 @@ class ProjectController extends Controller
             throw $this->createNotFoundException('Project not found.');
         }
 
-        $project = $project[0];
 
-        $project->setCurrentVersion($project->getVersion()->getId());
+        $project = $project[0];
+        $project->setCurrentVersion($project->getVersion()->getVersionNumber());
+
+        $this->checkPermission($project);
 
         $view = View::create()
             ->setStatusCode(200)
@@ -130,7 +124,9 @@ class ProjectController extends Controller
         }
 
         $project = $project[0];
-        $project->setCurrentVersion($version);
+        $project->setCurrentVersion($version->getVersionNumber());
+
+        $this->checkPermission($project);
 
         $view = View::create()
             ->setStatusCode(200)
@@ -171,7 +167,6 @@ class ProjectController extends Controller
         $newFiles = array();
         foreach($project->getFiles() as $file) {
             // If the file is not of the same version as the current version skip file
-            $this->get('logger')->addInfo("", array($file->getVersion()->getId(), $project->getVersion()->getId()));
             if($file->getVersion() && $file->getVersion()->getId() !== $project->getVersion()->getId()) {
                 continue;
             }
@@ -187,6 +182,7 @@ class ProjectController extends Controller
             $newFile->setContent($file->getContent());
             $newFile->setProject($project);
             $newFile->setVersion($version);
+            $newFile->setUser($this->get('security.context')->getToken()->getUser());
 
             $newFiles[] = $newFile;
         }
@@ -198,9 +194,10 @@ class ProjectController extends Controller
         $em->flush();
 
         // Set the current version of the project (Not stored in db)
-        $project->setCurrentVersion($project->getVersion()->getId());
+        $project->setCurrentVersion($project->getVersion()->getVersionNumber());
 
-        //
+        $this->checkPermission($project);
+
         $view = View::create()
             ->setStatusCode(200)
             ->setData($project);
@@ -255,7 +252,9 @@ class ProjectController extends Controller
         $em->persist($project);
         $em->flush();
 
-        $project->setCurrentVersion($project->getVersion()->getId());
+        $project->setCurrentVersion($project->getVersion()->getVersionNumber());
+
+        $this->checkPermission($project);
 
         $view = View::create()
             ->setStatusCode(200)
@@ -288,7 +287,9 @@ class ProjectController extends Controller
         $em->persist($project);
         $em->flush();
 
-        $project->setCurrentVersion($project->getVersion()->getId());
+        $project->setCurrentVersion($project->getVersion()->getVersionNumber());
+
+        $this->checkPermission($project);
 
         $view = View::create()
             ->setStatusCode(200)
@@ -315,6 +316,9 @@ class ProjectController extends Controller
 
         $project = $project[0];
 
+        $this->checkPermission($project);
+
+        // Delete user
         $em->remove($project);
         $em->flush();
 
@@ -326,10 +330,6 @@ class ProjectController extends Controller
 
     protected function createProjectFromRequest(Project $project, $newVersion = false)
     {
-        if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(403, "Unauthorized");
-        }
-
         $em = $this->getDoctrine()->getManager();
         $request = $this->getRequest();
         $version = $project->getVersion();
@@ -339,8 +339,8 @@ class ProjectController extends Controller
             $version = new ProjectVersion();
         } else {
             // If the current version is not the same as the db project then create a new version
-            $versionRequest = $request->get("current_version", $project->getVersion()->getId());
-            if ($project->getVersion()->getId() !== $versionRequest) {
+            $versionRequest = $request->get("current_version", $project->getVersion()->getVersionNumber());
+            if ($project->getVersion()->getVersionNumber() !== $versionRequest) {
                 $version = new ProjectVersion();
                 $version->setVersionNumber($project->getVersion()->getVersionNumber());
                 $version->incVersionNumber();
@@ -383,6 +383,7 @@ class ProjectController extends Controller
             $file->setContent($fileData['content']);
             $file->setProject($project);
             $file->setVersion($project->getVersion());
+            $file->setUser($this->get('security.context')->getToken()->getUser());
 //            } else {
 //                $file = $this->getDoctrine()->getRepository("WebIDESiteBundle:File")->find(array('id' => $fileData));
 //            }
@@ -398,5 +399,25 @@ class ProjectController extends Controller
         $project->setVersion($version);
 
         return $project;
+    }
+
+    protected function checkPermission(OwnableEntity $entity=null)
+    {
+        if($entity !== null) {
+            if(!$this->get('security.context')->isGranted('ROLE_USER')) {
+                throw new HttpException(401, "Unauthorized");
+            }
+            if($this->get('security.context')->getToken()->getUser() !== $entity->getUser()) {
+                throw new HttpException(403, "Unauthorized");
+            }
+
+            return true;
+        } else {
+            if(!$this->get('security.context')->isGranted('ROLE_USER')) {
+                throw new HttpException(401, "Unauthorized");
+            }
+
+            return true;
+        }
     }
 }

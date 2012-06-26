@@ -2,6 +2,8 @@
 namespace WebIDE\SiteBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use WebIDE\SiteBundle\Entity\OwnableEntity;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use WebIDE\SiteBundle\Entity\File;
 use FOS\RestBundle\View\View;
 use JMS\SecurityExtraBundle\Annotation\Secure;
@@ -11,9 +13,7 @@ class FileController extends Controller
 {
     public function getFilesAction()
     {
-        if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new AccessDeniedException();
-        }
+        $this->checkPermission();
 
         $em = $this->getDoctrine();
         $files = $em->getRepository("WebIDESiteBundle:File")->findAll();
@@ -27,12 +27,10 @@ class FileController extends Controller
 
     public function getFileAction($id)
     {
-        if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new AccessDeniedException();
-        }
-
         $em = $this->getDoctrine();
         $file = $em->getRepository("WebIDESiteBundle:File")->find($id);
+
+        $this->checkPermission($file);
 
         $view = View::create()
             ->setStatusCode(200)
@@ -68,6 +66,8 @@ class FileController extends Controller
 
         $project = $project[0];
 
+        $this->checkPermission($file);
+
         $file->setActive($request->get('active'));
         $file->setSelected($request->get('selected'));
         $file->setResource($request->get('resource'));
@@ -77,6 +77,7 @@ class FileController extends Controller
         $file->setContent($request->get('content'));
         $file->setProject($project);
         $file->setVersion($project->getVersion());
+        $file->setUser($this->get('security.context')->getToken()->getUser());
 
         //TODO: Add validation
 
@@ -119,6 +120,8 @@ class FileController extends Controller
 
         $project = $project[0];
 
+        $this->checkPermission($file);
+
         $file->setActive($request->get('active'));
         $file->setSelected($request->get('selected'));
         $file->setResource($request->get('resource'));
@@ -128,6 +131,7 @@ class FileController extends Controller
         $file->setContent($request->get('content'));
         $file->setProject($project);
         $file->setVersion($project->getVersion());
+        $file->setUser($this->get('security.context')->getToken()->getUser());
 
         //TODO: Add validation
 
@@ -155,6 +159,8 @@ class FileController extends Controller
             throw $this->createNotFoundException('File not found.');
         }
 
+        $this->checkPermission($file);
+
         $em->remove($file);
         $em->flush();
 
@@ -163,5 +169,23 @@ class FileController extends Controller
             ->setData(array());
 
         return $this->get('fos_rest.view_handler')->handle($view);
+    }
+
+    protected function checkPermission(OwnableEntity $entity=null)
+    {
+        if($entity !== null) {
+            if($this->get('security.context')->isGranted('ROLE_USER') || $this->get('security.context')->getToken()->getUser() !== $entity->getUser()) {
+                return true;
+            } else {
+                die("test");
+                throw new HttpException(403, "Unauthorized");
+            }
+        } else {
+            if($this->get('security.context')->isGranted('ROLE_USER')) {
+                throw new HttpException(403, "Unauthorized");
+            } else {
+                return true;
+            }
+        }
     }
 }

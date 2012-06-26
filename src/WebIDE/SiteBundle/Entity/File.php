@@ -8,7 +8,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @ORM\Entity
  * @ORM\Table(name="files")
  */
-class File
+class File implements OwnableEntity
 {
     /**
      * @ORM\Id
@@ -56,6 +56,11 @@ class File
      * @ORM\Column(type="text")
      */
     protected $content;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="User")
+     */
+    private $user;
 
     /**
      * @ORM\ManyToOne(targetEntity="ProjectVersion", cascade={"persist"})
@@ -174,8 +179,18 @@ class File
         $this->version = $version;
     }
 
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    public function setUser(User $user)
+    {
+        $this->user = $user;
+    }
+
     /**
-     * @return \WebIDE\SiteBundle\Entity\datetime
+     * @return \datetime
      */
     public function getCreated()
     {
@@ -183,7 +198,7 @@ class File
     }
 
     /**
-     * @param \WebIDE\SiteBundle\Entity\datetime $created
+     * @param \datetime $created
      */
     public function setCreated($created)
     {
@@ -191,7 +206,7 @@ class File
     }
 
     /**
-     * @return \WebIDE\SiteBundle\Entity\datetime
+     * @return \datetime
      */
     public function getUpdated()
     {
@@ -199,7 +214,7 @@ class File
     }
 
     /**
-     * @param \WebIDE\SiteBundle\Entity\datetime $updated
+     * @param \datetime $updated
      */
     public function setUpdated($updated)
     {
