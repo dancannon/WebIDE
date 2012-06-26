@@ -22,7 +22,7 @@ module.exports = function (grunt) {
 
         clean: {
             build: ["../../../../web/img", "../../../../web/css", "../../../../web/js"],
-            prod: ["../../../../web/watchFile"]
+            prod: []
         },
 
         copy: {
@@ -167,17 +167,6 @@ module.exports = function (grunt) {
             }
         },
 
-        min: {
-            app: {
-                src: ['<config:concat.dist.dest>'],
-                dest: '../../../../web/js/app.js'
-            },
-            require: {
-                src: ['../../../../web/js/require.js'],
-                dest: '../../../../web/js/require.js'
-            }
-        },
-
         uglify: {},
 
         jshint: {
@@ -213,13 +202,22 @@ module.exports = function (grunt) {
             }
         },
 
-        mincss: {},
+        min: {
+            app: {
+                src: ['<config:concat.dist.dest>'],
+                dest: '../../../../web/js/app.js'
+            },
+            require: {
+                src: ['public_src/js/vendors/almond.js'],
+                dest: '../../../../web/js/require.js'
+            }
+        },
+
+        mincss: {
+            '../../../../web/css/style.css': '../../../../web/css/style.css'
+        },
 
         watch: {
-//            test: {
-//                files: ['public_src/js/app.js', 'public_src/js/app/*.js', 'public_src/test/**/*.js'],
-//                tasks: "test"
-//            },
             build: {
                 files: ['public_src/js/app.js', 'public_src/js/app/**/*.js', 'public_src/js/app/templates/**/*.hbs', 'public_src/less/**/*.less'],
                 tasks: "build notifyBuildComplete"
@@ -236,7 +234,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask("test", "lint");
     grunt.registerTask("build", "lint clean:build requirejs concat less copy");
-    grunt.registerTask("release", "lint clean:build handlebars requirejs concat less min mincss copy clean:prod");
+    grunt.registerTask("release", "lint clean:build handlebars requirejs concat less copy min mincss clean:prod");
 
     grunt.registerTask("default", "build");
 

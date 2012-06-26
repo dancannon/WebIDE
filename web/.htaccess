@@ -306,8 +306,8 @@ AddCharset utf-8 .html .css .js .xml .json .rss .atom
     RewriteRule ^(.*)$ app.php [QSA,L]
 
     RewriteEngine On
-        RewriteCond %{REQUEST_URI} !\.(css|gif|jpg|png)$
-        RewriteCond %{DOCUMENT_ROOT}/maintenance.html -f
-        RewriteCond %{SCRIPT_FILENAME} !maintenance.html
-        RewriteRule (.*) /maintenance.html [L]
+    RewriteCond %{REQUEST_URI} !\.(css|gif|jpg|png)$
+    RewriteCond %{DOCUMENT_ROOT}/maintenance.html -f
+    RewriteCond %{SCRIPT_FILENAME} !maintenance.html
+    RewriteRule (.*) /maintenance.html [L]
 </IfModule>
