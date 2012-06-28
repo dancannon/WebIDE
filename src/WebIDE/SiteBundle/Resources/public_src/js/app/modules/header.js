@@ -31,7 +31,7 @@ define(["app/webide","use!backbone","app/modules/modals","app/modules/versions"]
                 return {
                     project: app.project.toJSON(),
                     versions: app.project.get("versions").toJSON()
-                }
+                };
             },
 
             switch_project: function() {
@@ -74,7 +74,7 @@ define(["app/webide","use!backbone","app/modules/modals","app/modules/versions"]
                     var version = app.project.get('version').get('version_number');
                     app.router.navigate('/' + id + '/' + version, {
                         trigger: true
-                    })
+                   });
                 });
             },
             download: function() {
@@ -94,8 +94,6 @@ define(["app/webide","use!backbone","app/modules/modals","app/modules/versions"]
         // This will fetch the tutorial template and render it.
         Header.Views.Main = Backbone.View.extend({
             template: "header/header",
-            id: "header",
-            className: "clearfix",
             keep: true,
 
             initialize: function() {

@@ -17,7 +17,7 @@ module.exports = function (grunt) {
         },
 
         lint: {
-            files: ['grunt.js', 'public_src/js/app.js', 'public_src/js/app/*.js', 'public_src/test/**/*.js']
+            files: ['grunt.js', 'public_src/js/app/**/*.js']
         },
 
         clean: {
@@ -103,6 +103,9 @@ module.exports = function (grunt) {
                     deps: ["jquery"]
                 },
                 "plugins/jquery.noty": {
+                    deps: ["jquery"]
+                },
+                "plugins/jquery.timeago": {
                     deps: ["jquery"]
                 },
                 "plugins/backbone.layoutmanager": {

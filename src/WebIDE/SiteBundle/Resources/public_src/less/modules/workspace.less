@@ -24,21 +24,22 @@
     right: 0;
 }
 
-#workspace .column .inner {
-    margin: 5px 5px 0 0;
-}
-
+//#workspace .column .inner {
+//    margin: 5px 5px 0 0;
+//}
+//
 #workspace .column.left .inner {
-    margin-left: 5px;
+    margin-right: 0px;
 }
-
-#workspace .column .panel:last-child .inner {
-    margin-bottom: 5px;
-}
+//
+//#workspace .column .panel:last-child .inner {
+//    margin-bottom: 5px;
+//}
 
 #workspace .panel {
     position: relative;
     overflow: hidden;
+    height: 33.3%;
 }
 
 #workspace .inner {
@@ -68,6 +69,14 @@
     top: 30px;
     right: 2px;
     bottom: 2px;
+}
+
+#workspace .frame.disabled {
+    background: #a5a5a5;
+}
+
+#workspace #preview_panel {
+    height: 100%;
 }
 
 #workspace #preview_panel .inner {

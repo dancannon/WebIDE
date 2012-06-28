@@ -43,9 +43,9 @@ function (webide, Backbone, Project, Files) {
                 case "2":
                     project = new Project.Model({
                         files: new Files.Collection([
-                            new Files.Model({name: "index.html", type: "html", selected:true}),
-                            new Files.Model({name: "style.css", type: "css", selected:true}),
-                            new Files.Model({name: "script.js", type: "javascript", selected:true})
+                            new Files.Model({name: "index.html", type: "html", selected:true, order: 1}),
+                            new Files.Model({name: "style.css", type: "css", selected:true, order: 2}),
+                            new Files.Model({name: "script.js", type: "javascript", selected:true, order: 3})
                         ])
                     });
                     break;

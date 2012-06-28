@@ -1,5 +1,6 @@
 .idea
 .rsync_cache
+*.sublime-*
 
 # Bootstrap
 app/bootstrap*

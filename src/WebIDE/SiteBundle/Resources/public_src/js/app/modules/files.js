@@ -1,6 +1,6 @@
-define(["app/webide","use!backbone", "app/modules/project", "app/modules/versions", "jquery", "jqueryui", "use!plugins/backbone.relational", "plugins/jquery.contextMenu"],
+define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", "jquery", "jqueryui", "use!plugins/backbone.relational", "plugins/jquery.contextMenu"],
 
-    function (webide, Backbone, Project, Versions) {
+    function (webide, _, Backbone, Versions) {
         // Create a new module
         var Files = webide.module(),
             app = webide.app;
@@ -14,6 +14,10 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
                 order: 0,
                 type:'html',
                 content: ""
+            },
+
+            initialize: function() {
+                this.defaults.order = app.project.get('files').nextOrder();
             },
 
             urlRoot: globals.baseUrl + '/files',
@@ -41,6 +45,10 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
 
             isResource: function() {
                 return this.get("resource") === null;
+            },
+
+            nextOrder: function() {
+                return app.project.get('files').nextOrder();
             }
         });
 
@@ -50,71 +58,6 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
 
             initialize: function() {
                 var that = this;
-
-                app.on("application:init", function() {
-                    app.on("file:create", function(args) {
-                        if(!that.any(function(file) {
-                            return (file.get('name') === args.name) && (file.get('type') === args.type);
-                        })) {
-                            args.project = app.project;
-
-                            var currSelected = app.project.get('files').getSelected(args.type);
-                            if(currSelected) currSelected.save("selected", false);
-
-                            args.selected = true;
-
-                            var newfile = that.create(args);
-
-                            app.trigger("file:select", {
-                                file: newfile,
-                                type: newfile.get("type")
-                            });
-
-                        } else {
-                            app.trigger("application:notify", {
-                                text: "A file already exists with that name",
-                                type: "error"
-                            });
-                        }
-                    });
-                    app.on("file:import", function(args) {
-                        if(!that.any(function(file) {
-                            return (file.get('name') === args.name) && (file.get('type') === args.type);
-                        })) {
-                            //Load file
-                            $.getJSON('/resource/' + encodeURI(args.url))
-                                .success(function(data) {
-                                    args.project = app.project;
-                                    args.resource = args.url;
-                                    args.content = data.content;
-
-                                    var newfile = that.create(args);
-
-                                    app.project.get('files').map(function(file) {
-                                        if(file.get("type") === newfile.get("type") && file !== newfile) {
-                                            file.set("selected", false);
-                                        }
-                                    });
-
-                                    app.trigger("file:select", {
-                                        file: newfile,
-                                        type: newfile.get("type")
-                                    });
-                                })
-                                .error(function(data) {
-                                    app.trigger("application:notify", {
-                                        message: data.message,
-                                        type: "error"
-                                    });
-                                });
-                        } else {
-                            app.trigger("application:notify", {
-                                text: "A file already exists with that name",
-                                type: "error"
-                            });
-                        }
-                    });
-                });
             },
 
             ofType: function (type, callback) {
@@ -136,8 +79,11 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
             },
 
             nextOrder: function() {
-                if (!this.length) return 1;
-                return this.last().get('order') + 1;
+                if (!this.length) {
+                    return 1;
+                } else {
+                    return this.last().get('order') + 1;
+                }
             },
 
             comparator: function(file) {
@@ -150,33 +96,24 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
             template:"files/tree",
             className:"filetree",
             tagName: "ul",
-            keep: true,
 
             initialize: function() {
-                app.project.on("change:files", function() {
+                app.project.on("add:files remove:files", function() {
                     this.render();
-                }, this);
-                app.on("file:select", function(args) {
-                    if(args.type === this.type) {
-                        this.render(this);
-                    }
                 }, this);
             },
 
             render: function(manage) {
-                var that = this,
-                    view = manage(this);
-
                 this.views = {};
 
                 app.project.get('files').each(function(file) {
-                    that.insertView("#" + file.get("type") + "_tree ul", new Files.Views.TreeItem({
+                    this.insertView("#" + file.get("type") + "_tree ul", new Files.Views.TreeItem({
                         model: file,
                         id: file.get('id')
                     }));
-                });
+                }, this);
 
-                return view.render().then(function(el) {
+                return manage(this).render().then(function(el) {
                     var that = this;
                     //Create context menu
                     $('.directory > a', el).contextPopup({
@@ -202,13 +139,13 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
                             sortableEl.find('li').each(function(index, itemEl) {
                                 var file = app.project.get('files').get(itemEl.id);
                                 if(file) {
-                                    file.set('order', index);
+                                    file.set('order', index + 1);
                                 }
                             });
 
                             app.trigger("preview:update");
                         }
-                    })
+                    });
                 });
             }
         });
@@ -217,6 +154,7 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
             template:"files/file_tree",
             tagName: "li",
             className: "file",
+            keep: false,
 
             events: {
                 "dblclick ": "select_file"
@@ -247,7 +185,6 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
                 });
 
                 app.trigger("file:select", {
-                    file: this.model,
                     type: this.model.get("type")
                 });
             },
@@ -263,6 +200,10 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
 
                 $("#delete_file #cid").val(this.model.cid);
                 $("#delete_file").modal('show');
+
+                app.trigger("file:close", {
+                    type: this.model.get("type")
+                });
             },
 
             render: function(manage) {
@@ -298,21 +239,16 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
 
         Files.Views.Tab = Backbone.View.extend({
             tagName: "ul",
-            keep: true,
 
             initialize: function() {
                 var that = this;
 
                 this.type = this.options.type || "";
 
-                app.project.get("files").on("add remove change reset", function() {
-                    this.render();
-                }, this);
-                app.on("file:select", function(args) {
-                    if(args.type === this.type) {
-                        this.render(this);
-                    }
-                }, this);
+
+                app.on("file:select", this.render, this);
+                app.project.on("add:files remove:files", this.render, this);
+
             },
 
             render: function(manage) {
@@ -349,17 +285,12 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
             },
 
             initialize: function() {
-                this.model.on("change", function() {
-                    this.render();
-                }, this);
+                this.model.on("change", this.render, this);
                 this.model.on("remove", this.remove, this);
             },
 
             serialize: function() {
-                var ret = {};
-                ret.active = this.model.isSelected();
-
-                return _.extend(ret, this.model.toJSON());
+                return this.model.toJSON();
             },
 
             render: function(manage) {
@@ -386,7 +317,6 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
                 });
 
                 app.trigger("file:select", {
-                    file: this.model,
                     type: this.model.get("type")
                 });
             },
@@ -397,7 +327,6 @@ define(["app/webide","use!backbone", "app/modules/project", "app/modules/version
                 this.remove();
 
                 app.trigger("file:close", {
-                    file: this.model,
                     type: this.model.get("type")
                 });
 

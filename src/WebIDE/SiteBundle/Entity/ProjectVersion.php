@@ -31,6 +31,7 @@ class ProjectVersion
 
     /**
      * @ORM\ManyToOne(targetEntity="Project")
+     * @Serializer\Accessor(getter="getProjectId")
      */
     private $project;
 
@@ -76,6 +77,11 @@ class ProjectVersion
     public function getProject()
     {
         return $this->project;
+    }
+
+    public function getProjectId()
+    {
+        return $this->getProject() ? $this->getProject()->getId() : null;
     }
 
     public function setProject($project)

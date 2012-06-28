@@ -3,6 +3,7 @@ namespace WebIDE\SiteBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use JMS\SerializerBundle\Annotation as Serializer;
 
 /**
  * @ORM\Entity
@@ -44,6 +45,7 @@ class File implements OwnableEntity
 
     /**
      * @ORM\ManyToOne(targetEntity="Project", inversedBy="files")
+     * @Serializer\Accessor(getter="getProjectId")
      */
     protected $project;
 
@@ -59,12 +61,14 @@ class File implements OwnableEntity
 
     /**
      * @ORM\ManyToOne(targetEntity="User")
+     * @Serializer\Exclude
      */
     private $user;
 
     /**
      * @ORM\ManyToOne(targetEntity="ProjectVersion", cascade={"persist"})
      * @ORM\JoinColumn(name="version_id", referencedColumnName="id")
+     * @Serializer\Accessor(getter="getVersionId")
      */
     private $version;
 
@@ -144,6 +148,11 @@ class File implements OwnableEntity
         return $this->project;
     }
 
+    public function getProjectId()
+    {
+        return $this->getProject() ? $this->getProject()->getId() : null;
+    }
+
     public function setProject($project)
     {
         $this->project = $project;
@@ -172,6 +181,11 @@ class File implements OwnableEntity
     public function getVersion()
     {
         return $this->version;
+    }
+
+    public function getVersionId()
+    {
+        return $this->getVersion() ? $this->getVersion()->getId() : null;
     }
 
     public function setVersion($version)

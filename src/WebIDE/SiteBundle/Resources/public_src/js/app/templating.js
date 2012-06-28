@@ -1,16 +1,17 @@
-define(["jquery", "use!handlebars", "use!moment"],
+define(["jquery", "use!handlebars", "use!moment", "use!plugins/jquery.timeago"],
 
     function ($, Handlebars, moment) {
         var hasSessionStorage = !!sessionStorage;
-
-        //Init cache
-        var JST = {};
+        var JST = window.JST = window.JST || {};
 
         //Handlebars helpers
-        Handlebars.registerHelper('date', function(context, block) {
+        Handlebars.registerHelper('date', function() {
+            return new Date();
+        });
+        Handlebars.registerHelper('dateFormat', function(context, block) {
             if (moment) {
                 var f = block.hash.format || "MMM Mo, YYYY";
-                return moment(context).format(f);
+                return moment(context || new Date()).format(f);
             }else{
                 return context;
             }
@@ -19,16 +20,10 @@ define(["jquery", "use!handlebars", "use!moment"],
             return globals.baseUrl + url;
         });
 
-        return {
+        return window.template = {
             getFromCache: function(path) {
                 if (hasSessionStorage && !globals.debug) {
-                    var cached = window.sessionStorage.getItem("template-" + path);
-
-                    if (!!cached) {
-                        return Handlebars.compile(cached);
-                    } else {
-                        return cached;
-                    }
+                    return window.sessionStorage.getItem("template-" + path);
                 } else {
                     return JST[path];
                 }
@@ -40,22 +35,19 @@ define(["jquery", "use!handlebars", "use!moment"],
                 if (hasSessionStorage && !globals.debug) {
                     window.sessionStorage.setItem("template-" + path, raw);
                 } else {
-                    JST[path] = Handlebars.compile(raw);
+                    JST[path] = raw;
                 }
             },
             fetch: function(path, done) {
                 var that = this;
+
                 if (!this.isCached(path)) {
                     $.ajax({
                         url:path,
-                        type:"get",
                         dataType:"text",
-                        cache:false,
-                        global:false,
 
                         success: function (contents) {
                             that.store(path, contents);
-
                             done(that.getFromCache(path));
                         }
                     });

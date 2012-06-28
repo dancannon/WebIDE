@@ -40,7 +40,7 @@ function(webide, Backbone, Files) {
                 });
 
                 this.$el.on('keypress', function(e) {
-                    if(e.which == 13) {
+                    if(e.which === 13) {
                         that.submit();
                     }
                 });
@@ -150,7 +150,9 @@ function(webide, Backbone, Files) {
 
             if(model) {
                 var currSelected = app.project.get('files').getSelected(model.get('type') );
-                if(currSelected) currSelected.save("selected", false);
+                if(currSelected) {
+                    currSelected.set("selected", false);
+                }
 
 //                app.trigger("file:select", {
 //                    file: selectedFile,
@@ -180,7 +182,7 @@ function(webide, Backbone, Files) {
             $("#settingsTab a", el).click(function (e) {
                 e.preventDefault();
                 $(this).tab('show');
-            })
+            });
         },
 
         submit: function() {
@@ -194,13 +196,13 @@ function(webide, Backbone, Files) {
 
                     if(metaData) {
                         metaData.set('order' ,index);
-                        metaData.set('active', item.find('active').selected())
+                        metaData.set('active', item.find('active').selected());
                     } else {
                         app.project.get('files').get('metaData').create({
                             id: view.model.id,
                             order: index,
                             active: item.find('active').selected()
-                        })
+                        });
                     }
                 }
             });
@@ -221,11 +223,11 @@ function(webide, Backbone, Files) {
             var that = this;
 
             // Iterate over the passed collection and create a view for each item.
-            app.project.get("files").ofType(this.options.type, (function(model) {
+            app.project.get("files").ofType(this.options.type, function(model) {
                 that.insertView(new Modals.Views.ListItem({
                     model: model
                 }));
-            }));
+            });
 
             return manage(this).render().then(function(el) {
                 $(el).sortable();

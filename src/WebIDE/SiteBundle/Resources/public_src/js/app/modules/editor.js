@@ -16,34 +16,98 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals",
             }
         });
 
+        Editor.Views.Textarea = Backbone.View.extend({
+            template: "editor/textarea",
+            tagName: "textarea",
+            codemirror: null,
+            keep: true,
+
+            serialize: function() {
+                return {
+                    file: this.model.toJSON()
+                };
+            },
+
+            render: function(manage) {
+                var that = this;
+                return manage(this).render().then(function(el) {
+                    if(!el.parentNode) {
+                        return;
+                    }
+
+                    var foldFunc;
+
+                    CodeMirror.commands.js_autocomplete = function(cm) {
+                        CodeMirror.simpleHint(cm, CodeMirror.javascriptHint);
+                    };
+
+                    if(this.type === "html") {
+                        foldFunc = CodeMirror.newFoldFunction(CodeMirror.tagRangeFinder);
+                    } else {
+                        foldFunc = CodeMirror.newFoldFunction(CodeMirror.braceRangeFinder);
+                    }
+
+                    this.codemirror = CodeMirror.fromTextArea(el, {
+                        mode: this.model.get("type"),
+                        lineNumbers: true,
+                        lineWrapping: true,
+                        onChange: function(cm, event) {
+                            that.model.set("content", cm.getValue());
+
+                            app.trigger("app:reload");
+                        },
+                        onGutterClick: foldFunc,
+                        extraKeys: {
+                            "Ctrl-Q": function(cm){foldFunc(cm, cm.getCursor().line);}
+                        }
+                    });
+
+                    if(this.type === "javascript") {
+                        this.codemirror.setOption("extraKeys", {
+                            "Ctrl-Q": function(cm){foldFunc(cm, cm.getCursor().line);},
+                            "Ctrl-Space": "js_autocomplete",
+                            "'>'": function(cm) { cm.closeTag(cm, '>'); },
+                            "'/'": function(cm) { cm.closeTag(cm, '/'); }
+                        });
+                    }
+
+                    this.codemirror.setValue(this.model.get("content"));
+                    this.codemirror.refresh();
+                });
+            },
+
+            cleanup: function() {
+                if(this.codemirror) {
+                    var element = this.codemirror.getWrapperElement();
+                    if(element) {
+                        $(element).remove();
+                    }
+                }
+            }
+        });
+
         Editor.Views.Panel = Backbone.View.extend({
             template: "editor/panel",
-            className: "panel",
+            className: "panel disabled",
             keep: true,
             codemirror: null,
 
             events: {
-                "focusin .frame": "focus_in",
-                "focusout .frame": "focus_out",
                 "click .fullscreen": "fullscreen",
                 "click .exit_fullscreen": "exit_fullscreen"
             },
 
             initialize: function() {
-                var that = this;
-                app.on("application:init", function() {
-                    app.project.get('files').on("add remove fetch", function(event) {
-                        this.update_textarea();
-                    }, that);
-                    app.on("file:select file:close", function(args) {
-                        if(args.type === this.type) {
-                            this.update_textarea();
-                        }
-                    }, that);
-
-                    this.initialize_cm();
-                    this.update_textarea();
+                app.on("file:select file:close", this.update_textarea, this);
+                app.project.on("add:files remove:files", function(file) {
+                    this.update_textarea({
+                        type: file.get('type')
+                    });
                 }, this);
+
+                app.trigger("file:select", {
+                    type: this.type
+                });
             },
 
             serialize: function() {
@@ -51,101 +115,6 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals",
                     name: this.name,
                     type: this.type
                 };
-            },
-
-            render: function(manage) {
-                return manage(this).render();
-            },
-
-            change: function(editor, changes, forceCompile) {
-                var selected = app.project.get('files').getSelected(this.mode);
-                if(!selected) {
-                    return;
-                }
-
-                selected.set("content", editor.getValue());
-                app.trigger("app:reload");
-            },
-
-            initialize_cm: function() {
-                var selected = app.project.get('files').getSelected(this.type),
-                    $textarea = $("textarea", this.el),
-                    value = selected ? selected.get("content") : "";
-
-                if(!selected) {
-                    this.$el.addClass("disabled");
-                } else {
-                    this.$el.removeClass("disabled");
-                }
-
-                var foldFunc;
-
-                CodeMirror.commands.js_autocomplete = function(cm) {
-                    CodeMirror.simpleHint(cm, CodeMirror.javascriptHint);
-                };
-
-                if(this.type === "html") {
-                    foldFunc = CodeMirror.newFoldFunction(CodeMirror.tagRangeFinder);
-                } else if(this.type === "css") {
-                    foldFunc = CodeMirror.newFoldFunction(CodeMirror.braceRangeFinder);
-                } else if(this.type === "javascript") {
-                    foldFunc = CodeMirror.newFoldFunction(CodeMirror.braceRangeFinder);
-                }
-
-                this.codemirror = CodeMirror.fromTextArea($textarea.get(0), {
-                    mode: this.type,
-                    lineNumbers: true,
-                    lineWrapping: true,
-                    onChange: this.change,
-                    onGutterClick: foldFunc,
-                    extraKeys: {
-                        "Ctrl-Q": function(cm){foldFunc(cm, cm.getCursor().line);}
-                    }
-                });
-
-                if(this.type === "javascript") {
-                    this.codemirror.setOption("extraKeys", {
-                        "Ctrl-Q": function(cm){foldFunc(cm, cm.getCursor().line);},
-                        "Ctrl-Space": "js_autocomplete",
-                        "'>'": function(cm) { cm.closeTag(cm, '>'); },
-                        "'/'": function(cm) { cm.closeTag(cm, '/'); }
-                    })
-                }
-
-                this.codemirror.setValue(value);
-                this.codemirror.refresh();
-            },
-
-            update_textarea: function() {
-                var selected = app.project.get('files').getSelected(this.type);
-                //If nothing is selected disable the textarea
-                if(!selected) {
-                    this.$el.addClass("disabled");
-                    return;
-                } else {
-                    this.$el.removeClass("disabled");
-                }
-
-                var $textarea = $("textarea", this.el),
-                    value = selected.get("content");
-
-                $textarea.val(value);
-
-                this.codemirror.setValue(value);
-                this.codemirror.refresh();
-            },
-
-            /**
-             * Event for textarea gaining focus
-             */
-            focus_in: function(event) {
-                this.$el.find('.panel_name').fadeOut(150);
-            },
-            /**
-             * Event for textarea losing focus
-             */
-            focus_out: function(event) {
-                this.$el.find('.panel_name').fadeIn(150);
             },
 
             fullscreen: function() {
@@ -158,6 +127,28 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals",
                 app.trigger("editor:fullscreen:exit", {
                     panel: this
                 });
+            },
+
+            update_textarea: function(args) {
+                if(args.type === this.type) {
+                    var selected = app.project.get('files').getSelected(this.type);
+
+                    if(selected) {
+                        this.$el.removeClass("disabled");
+                        this.setView(".frame", new Editor.Views.Textarea({
+                            model: selected
+                        })).render();
+                    } else {
+                        var view = this.getView(function(view) {
+                            return view instanceof Editor.Views.Textarea;
+                        });
+
+                        if(view) {
+                            this.$el.addClass("disabled");
+                            view.remove();
+                        }
+                    }
+                }
             }
         });
 
@@ -166,23 +157,11 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals",
             type: "html",
             id: "html_panel",
 
-            events: {
-                "focusin .frame": "focus_in",
-                "focusout .frame": "focus_out",
-                "click .fullscreen": "fullscreen",
-                "click .exit_fullscreen": "exit_fullscreen",
-                "click .settings": "showSettings"
-            },
-
             initialize: function() {
                 Editor.Views.Panel.prototype.initialize.apply(this, arguments);
                 this.setViews({
-                    ".file_tabs" : [new Files.Views.Tab({model: app.project, type: "html"})]
+                    ".file_tabs" : new Files.Views.Tab({type: "html"})
                 });
-            },
-
-            showSettings: function(event) {
-                $("#html_config").modal('show');
             }
         });
         Editor.Views.CSSPanel = Editor.Views.Panel.extend({
@@ -193,7 +172,7 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals",
             initialize: function() {
                 Editor.Views.Panel.prototype.initialize.apply(this, arguments);
                 this.setViews({
-                    ".file_tabs" : [new Files.Views.Tab({collection: app.project.get('files'), type: "css"})]
+                    ".file_tabs" : new Files.Views.Tab({type: "css"})
                 });
             }
         });
@@ -205,54 +184,23 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals",
             initialize: function() {
                 Editor.Views.Panel.prototype.initialize.apply(this, arguments);
                 this.setViews({
-                    ".file_tabs" : [new Files.Views.Tab({collection: app.project.get('files'), type: "javascript"})]
+                    ".file_tabs" : new Files.Views.Tab({type: "javascript"})
                 });
             }
         });
-        Editor.Views.PreviewPanel = Backbone.View.extend({
+        Editor.Views.PreviewPanel = Editor.Views.Panel.extend({
             template: "editor/preview",
             id: "preview_panel",
             className: "panel",
             keep: true,
 
-            events: {
-                "focusin .frame": "focus_in",
-                "focusout .frame": "focus_out",
-                "click .fullscreen": "fullscreen",
-                "click .exit_fullscreen": "exit_fullscreen"
-            },
-
-            /**
-             * Event for textarea gaining focus
-             */
-            focus_in: function(event) {
-                this.$el.find('.panel_name').fadeOut(150);
-            },
-            /**
-             * Event for textarea losing focus
-             */
-            focus_out: function(event) {
-                this.$el.find('.panel_name').fadeIn(150);
-            },
-
-            fullscreen: function() {
-                app.trigger("editor:fullscreen", {
-                    panel: this
-                });
-            },
-
-            exit_fullscreen: function() {
-                app.trigger("editor:fullscreen:exit", {
-                    panel: this
-                });
-            }
+            initialize: function() {}
         });
 
 
         // This will fetch the tutorial template and render it.
         Editor.Views.Main = Backbone.View.extend({
             template: "editor/workspace",
-            id: "workspace",
             keep: true,
 
             initialize: function() {
@@ -265,80 +213,23 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals",
                 });
 
                 //Setup events
-                app.on("application:init", function() {
-                    that.update_panels();
-                });
-                app.on("editor:update", function() {
-                    that.update_panels();
-                });
-                app.on("sidebar.update", function(sidebar_width) {
-                    that.update_workspace(sidebar_width);
-                });
-                app.on("app:reload", function() {
-                    that.reload();
-                });
-                app.on("app:run", function() {
-                    that.reload(true);
-                });
-                app.on("editor:fullscreen", function(args) {
-                    var column_sizes = this.model.get("column_sizes").slice(0);
-                    var panel_sizes = this.model.get("panel_sizes").slice(0);
-
-                    this.$el.find('.panel').each(function(key, panel) {
-                        if(panel == args.panel.$el[0]) {
-                            panel_sizes[key] = 100;
-                        } else {
-                            panel_sizes[key] = 0;
-                        }
-                        args.panel.$el.css("height", that.$el.height());
-
-                        that.$el.find('.panel').addClass('hide');
-                        args.panel.$el.addClass('fullscreen');
-                        args.panel.$el.removeClass('hide');
-                    });
-                    this.$el.find('.column').each(function(key, column) {
-                        if($.contains(column, args.panel.$el[0])) {
-                            $(column).css("width", "100%");
-                            column_sizes[key] = 100;
-                        } else {
-                            $(column).css("width", "0%");
-                            $(column).hide();
-                            column_sizes[key] = 0;
-                        }
-                    });
-
-                    this.model.set("default_layout", {
-                        column_sizes: this.model.get("column_sizes"),
-                        panel_sizes: this.model.get("panel_sizes")
-                    });
-
-                    this.model.set("column_sizes", column_sizes);
-                    this.model.set("panel_sizes", panel_sizes);
-
-                    this.update_panels();
-                    this.update_workspace();
-                }, this);
-                app.on("editor:fullscreen:exit", function(args) {
-                    var column_sizes = this.model.get("default_layout").column_sizes;
-                    var panel_sizes = this.model.get("default_layout").panel_sizes;
-
-                    this.model.set("column_sizes", column_sizes);
-                    this.model.set("panel_sizes", panel_sizes);
-
-                    this.$el.find('.column').show();
-
-                    this.$el.find('.panel').removeClass('fullscreen');
-                    this.$el.find('.panel').removeClass('hide');
-
-                    this.update_panels();
-                    this.update_workspace();
-                }, this);
+                app.on("editor:update", this.update_panels, this);
+                app.on("app:reload", this.reload, this);
+                app.on("app:run", this.run, this);
+                app.on("editor:fullscreen", this.fullscreen, this);
+                app.on("editor:fullscreen:exit", this.exit_fullscreen, this);
 
 
                 //Backbone does not support this event so it needs to be bound manually
                 $(window).resize(function() {
                     app.trigger("editor:update");
                 });
+
+                this.update_panels();
+            },
+
+            run: function() {
+                this.reload(true);
             },
 
             reload: function(execJs) {
@@ -395,9 +286,59 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals",
                 $(panels[2]).css("height", this.model.get("panel_sizes")[2] + "%");
             },
 
-            update_workspace: function(sidebar_width) {
-                var el = this.$el;
-                el.css("left", sidebar_width);
+            fullscreen: function(args) {
+                var that = this;
+
+                var column_sizes = this.model.get("column_sizes").slice(0);
+                var panel_sizes = this.model.get("panel_sizes").slice(0);
+
+                this.$el.find('.panel').each(function(key, panel) {
+                    if(panel === args.panel.$el[0]) {
+                        panel_sizes[key] = 100;
+                    } else {
+                        panel_sizes[key] = 0;
+                    }
+                    args.panel.$el.css("height", that.$el.height());
+
+                    that.$el.find('.panel').addClass('hide');
+                    args.panel.$el.addClass('fullscreen');
+                    args.panel.$el.removeClass('hide');
+                });
+                this.$el.find('.column').each(function(key, column) {
+                    if($.contains(column, args.panel.$el[0])) {
+                        $(column).css("width", "100%");
+                        column_sizes[key] = 100;
+                    } else {
+                        $(column).css("width", "0%");
+                        $(column).hide();
+                        column_sizes[key] = 0;
+                    }
+                });
+
+                this.model.set("default_layout", {
+                    column_sizes: this.model.get("column_sizes"),
+                    panel_sizes: this.model.get("panel_sizes")
+                });
+
+                this.model.set("column_sizes", column_sizes);
+                this.model.set("panel_sizes", panel_sizes);
+
+                this.update_panels();
+            },
+
+            exit_fullscreen: function(args) {
+                var column_sizes = this.model.get("default_layout").column_sizes;
+                var panel_sizes = this.model.get("default_layout").panel_sizes;
+
+                this.model.set("column_sizes", column_sizes);
+                this.model.set("panel_sizes", panel_sizes);
+
+                this.$el.find('.column').show();
+
+                this.$el.find('.panel').removeClass('fullscreen');
+                this.$el.find('.panel').removeClass('hide');
+
+                this.update_panels();
             }
         });
 

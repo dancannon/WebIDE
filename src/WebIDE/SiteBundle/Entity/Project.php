@@ -34,6 +34,7 @@ class Project implements OwnableEntity
     /**
      * @ORM\OneToOne(targetEntity="ProjectVersion", cascade={"persist"})
      * @ORM\JoinColumn(name="version_id", referencedColumnName="id")
+     * @Serializer\Accessor(getter="getVersionId")
      */
     private $version;
 
@@ -41,6 +42,7 @@ class Project implements OwnableEntity
 
     /**
      * @ORM\OneToMany(targetEntity="ProjectVersion", mappedBy="project")
+     *
      */
     private $versions;
 
@@ -53,6 +55,7 @@ class Project implements OwnableEntity
 
     /**
      * @ORM\ManyToOne(targetEntity="User")
+     * @Serializer\Exclude()
      */
     private $user;
 
@@ -91,13 +94,12 @@ class Project implements OwnableEntity
     /**
      * Set files
      *
-     * @param ArrayCollection $files
+     * @param array $files
      * @return Project
      */
     public function setFiles($files)
     {
         $this->files = new ArrayCollection();
-
         foreach($files as $file) {
             $this->addFile($file);
         }
@@ -135,6 +137,11 @@ class Project implements OwnableEntity
     public function getVersion()
     {
         return $this->version;
+    }
+
+    public function getVersionId()
+    {
+        return $this->getVersion() ? $this->getVersion()->getId() : null;
     }
 
     /**

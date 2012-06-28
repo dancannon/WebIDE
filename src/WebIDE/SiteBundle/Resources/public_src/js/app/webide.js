@@ -16,7 +16,7 @@ define([
             },
 
             render: function (template, context) {
-                return template(context);
+                return Handlebars.compile(template)(context);
             },
 
             fetch: function(name) {
@@ -28,23 +28,27 @@ define([
         });
 
         return {
+            layouts: {},
+            layout: null,
+
             // Create a custom object with a nested Views object
             module:function (additionalProps) {
                 return _.extend({ Views:{} }, additionalProps);
             },
 
-            useLayout:function (name) {
-                // If there is an existing layout and its the current one, return it.
-                if (this.layout && this.layout.options.template === name) {
-                    return this.layout;
-                }
-
-
-                // Create the new layout and set it as current.
-                this.layout = new Backbone.Layout({
+            createLayout: function(name, options) {
+                return this.layouts[name] = new Backbone.Layout(_.extend({
                     template: name,
                     className: "layout layout_" + name
-                });
+                }, options));
+            },
+
+            useLayout:function (name) {
+                if(this.layouts[name]) {
+                    this.layout = this.layouts[name];
+                } else {
+                    this.layout  = this.createLayout(name);
+                }
 
                 return this.layout;
             },

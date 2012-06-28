@@ -28,15 +28,13 @@ function(webide, Backbone, Files) {
 	// This is the main sidebar view
 	Sidebar.Views.Main = Backbone.View.extend({
 		template: "sidebar/sidebar",
-		id: "sidebar",
-		className: "clearfix",
+        className: "inner_container",
         keep: true,
 
 		events: {
 			"click #minimize_sidebar": "minimize_sidebar",
 			"click #expand_sidebar": "expand_sidebar",
-			"click .resize": "expand_sidebar",
-			"mousedrag .resize": "resize_sidebar"
+			"click .resize": "expand_sidebar"
 		},
 
 		initialize: function() {
@@ -55,13 +53,6 @@ function(webide, Backbone, Files) {
 			this.model.on("change", function() {
 				app.trigger("sidebar.update", this.model.get("width"));
 			}, this);
-		},
-
-		render: function(manage) {
-			return manage(this).render().then(function(el) {
-				$(el).find('.resize').mousetools();
-				app.trigger("sidebar.update", this.model.get("width"));
-			});
 		},
 
         serialize: function() {
@@ -94,13 +85,6 @@ function(webide, Backbone, Files) {
 					width: 275,
 					active: true
 				});
-			}
-		},
-//
-		resize_sidebar: function(event) {
-			if(this.model.get("active")) {
-				var width = this.model.get("width") + (event.endPosition.pageX - event.lastPosition.pageX);
-				this.model.set("width", width);
 			}
 		}
 	});

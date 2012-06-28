@@ -203,42 +203,9 @@ class ProjectController extends Controller
         return $this->get('fos_rest.view_handler')->handle($view);
     }
 
-    /**
-     * @Rest\Get("/projects/{id}/download")
-     */
-    public function downloadProjectAction($id)
-    {
-        if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(403, "Unauthorized");
-        }
-
-        $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f WITH f.version = p.version WHERE p.id = :id");
-        $query->setParameter("id", $id);
-
-        $project = $query->getResult();
-
-        if (!$project || !isset($project[0])) {
-            throw $this->createNotFoundException('Project not found.');
-        }
-
-        $file = "/home/daniel/download.zip";
-
-        $headers = array(
-            'Content-Description'        => 'File Transfer',
-            'Content-Disposition'        => 'inline; attachment; filename=' . basename($file),
-            'Content-Type'               => 'application/zip',
-            'Content-Transfer-Encoding:' => 'binary',
-        );
-
-        return new Response(file_get_contents($file), 200, $headers);
-    }
-
     public function postProjectsAction()
     {
-        if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(403, "Unauthorized");
-        }
+        $this->checkPermission();
 
         $em = $this->getDoctrine()->getManager();
 
@@ -248,12 +215,10 @@ class ProjectController extends Controller
 
         //TODO: Add validation
 
-        $em->persist($project);
-        $em->flush();
-
         $project->setCurrentVersion($project->getVersion()->getVersionNumber());
 
-        $this->checkPermission($project);
+        $em->persist($project);
+        $em->flush();
 
         $view = View::create()
             ->setStatusCode(200)
@@ -353,24 +318,20 @@ class ProjectController extends Controller
 
         //Create files
         $files = array();
+
         foreach ($request->get('files', array()) as $fileData) {
-//            if(is_array($fileData)) {
+            $file = new File();
+
             // If a new version is requested create a new file
             if($newVersion) $file = new File();
 
             // Fetch the file from the db
             if(isset($fileData['id'])) {
                 $file = $this->getDoctrine()->getRepository("WebIDESiteBundle:File")->find(array('id' => $fileData['id']));
-
                 // If the file is not of the same version as the current version skip file
                 if($file->getVersion() && $file->getVersion()->getId() !== $project->getVersion()->getId()) {
                     continue;
                 }
-            }
-
-            // If the file is still not created then create it now
-            if(!isset($file) || !$file) {
-                $file = new File();
             }
 
             $file->setActive($fileData['active']);
@@ -380,22 +341,18 @@ class ProjectController extends Controller
             $file->setType($fileData['type']);
             $file->setName($fileData['name']);
             $file->setContent($fileData['content']);
-            $file->setProject($project);
-            $file->setVersion($project->getVersion());
+            $file->setVersion($version);
             $file->setUser($this->get('security.context')->getToken()->getUser());
-//            } else {
-//                $file = $this->getDoctrine()->getRepository("WebIDESiteBundle:File")->find(array('id' => $fileData));
-//            }
 
             $files[] = $file;
 
             //Update hash
             hash_update($hash, $file->getContent());
-            $em->persist($file);
         }
 
         $project->setHash(hash_final($hash));
         $project->setVersion($version);
+        $project->setFiles($files);
 
         return $project;
     }
