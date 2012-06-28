@@ -28,9 +28,9 @@ module.exports = function (grunt) {
         copy: {
             dev: {
                 src: [
-                    "public_src/js/**/*",
                     "public_src/font/**/*",
-                    "public_src/img/**/*"
+                    "public_src/img/**/*",
+                    "public_src/js/**/*"
                 ],
                 strip: /^public_src\//,
                 dest: "../../../../web/"
@@ -39,7 +39,8 @@ module.exports = function (grunt) {
                 src: [
                     "public_src/font/**/*",
                     "public_src/img/**/*",
-                    "public_src/js/app/templates/**/*.hbs"
+                    "public_src/js/app/templates/**/*.hbs",
+                    "public_src/js/vendors/require.js"
                 ],
                 strip: /^public_src\//,
                 dest: "../../../../web/"
@@ -191,8 +192,8 @@ module.exports = function (grunt) {
                 dest: '../../../../web/js/app.js'
             },
             require: {
-                src: ['public_src/js/vendors/require.js'],
-                dest: '../../../../web/js/require.js'
+                src: ['../../../../web/js/vendors/require.js'],
+                dest: '../../../../web/js/vendors/require.js'
             }
         },
 
@@ -216,7 +217,7 @@ module.exports = function (grunt) {
 
 
     grunt.registerTask("test", "lint");
-    grunt.registerTask("build", "lint clean:build less copy:dev ");
+    grunt.registerTask("build", "lint clean:build less copy:dev");
     grunt.registerTask("release", "lint clean:build requirejs less copy:prod min mincss clean:prod");
 
     grunt.registerTask("default", "build");
