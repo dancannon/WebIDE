@@ -1,94 +1,100 @@
-//require.config({
-//    paths: {
-//        // JavaScript folders
-//        vendors: "vendors",
-//        plugins: "plugins",
-//
-//        // Libraries
-//        jquery: "vendors/jquery",
-//        underscore: "vendors/underscore",
-//        backbone: "vendors/backbone",
-//        bootstrap: "vendors/bootstrap",
-//        handlebars: "vendors/handlebars",
-//        codemirror: "vendors/codemirror",
-//        jqueryui: "vendors/jqueryui",
-//        moment: "vendors/moment",
-//
-//        // Modes
-//        cm_html: "vendors/cm_modes/html/html",
-//        cm_xml: "vendors/cm_modes/xml/xml",
-//        cm_css: "vendors/cm_modes/css/css",
-//        cm_js: "vendors/cm_modes/javascript/javascript",
-//
-//        // Shim Plugin
-//        use: "vendors/use"
-//    },
-//
-//    use: {
-//        "templates": {
-//            deps: ["use!handlebars"]
-//        },
-//        backbone: {
-//            deps: ["use!underscore", "use!handlebars", "jquery"],
-//            attach: "Backbone"
-//        },
-//        "plugins/jquery.easing": {
-//            deps: ["jquery"]
-//        },
-//        "plugins/jquery.ui.position": {
-//            deps: ["jquery"]
-//        },
-//        "plugins/jquery.screenfull": {
-//            deps: ["jquery"]
-//        },
-//        "plugins/jquery.noty": {
-//            deps: ["jquery"]
-//        },
-//        "plugins/backbone.layoutmanager": {
-//            deps: ["use!backbone"]
-//        },
-//        "plugins/backbone.localstorage": {
-//            deps: ["use!backbone"]
-//        },
-//        "plugins/backbone.relational": {
-//            deps: ["use!backbone"]
-//        },
-//        "bootstrap": {
-//            deps: ["jquery"]
-//        },
-//        underscore: {
-//            attach: "_"
-//        },
-//        handlebars: {
-//            attach: "Handlebars"
-//        },
-//        codemirror: {
-//            attach: "CodeMirror"
-//        },
-//
-//        /** CodeMirror Modes **/
-//        "cm_xml": {
-//            deps: ["use!codemirror"]
-//        },
-//        "cm_css": {
-//            deps: ["use!codemirror"]
-//        },
-//        "cm_js": {
-//            deps: ["use!codemirror"]
-//        },
-//        "cm_html": {
-//            deps: ["use!codemirror", "use!cm_xml", "use!cm_css", "use!cm_js"]
-//        },
-//        moment: {
-//            attach: "moment"
-//        },
-//
-//        /** CodeMirror addons **/
-//        "plugins/cm.foldcode": {
-//            deps: ["use!codemirror"]
-//        }
-//    }
-//});
+require.config({
+    baseUrl: '/js',
+
+    paths: {
+        // JavaScript folders
+        vendors: "vendors",
+        plugins: "plugins",
+
+        // Libraries
+        jquery: "vendors/jquery",
+        underscore: "vendors/underscore",
+        backbone: "vendors/backbone",
+        bootstrap: "vendors/bootstrap",
+        handlebars: "vendors/handlebars",
+        codemirror: "vendors/codemirror",
+        jqueryui: "vendors/jqueryui",
+        moment: "vendors/moment",
+
+        // Modes
+        cm_html: "vendors/cm_modes/html/html",
+        cm_xml: "vendors/cm_modes/xml/xml",
+        cm_css: "vendors/cm_modes/css/css",
+        cm_js: "vendors/cm_modes/javascript/javascript",
+
+        // Shim Plugin
+        use: "vendors/use"
+    },
+
+    use: {
+        "templates": {
+            deps: ["use!handlebars"]
+        },
+        backbone: {
+            deps: ["use!underscore", "use!handlebars", "jquery"],
+            attach: "Backbone"
+        },
+        "plugins/jquery.easing": {
+            deps: ["jquery"]
+        },
+        "plugins/jquery.ui.position": {
+            deps: ["jquery"]
+        },
+        "plugins/jquery.screenfull": {
+            deps: ["jquery"]
+        },
+        "plugins/jquery.noty": {
+            deps: ["jquery"]
+        },
+        "plugins/jquery.timeago": {
+            deps: ["jquery"]
+        },
+        "plugins/backbone.layoutmanager": {
+            deps: ["use!backbone"]
+        },
+        "plugins/backbone.localstorage": {
+            deps: ["use!backbone"]
+        },
+        "plugins/backbone.relational": {
+            deps: ["use!backbone"]
+        },
+        "bootstrap": {
+            deps: ["jquery"]
+        },
+        underscore: {
+            attach: "_"
+        },
+        handlebars: {
+            attach: "Handlebars"
+        },
+        codemirror: {
+            attach: "CodeMirror"
+        },
+
+        /** CodeMirror Modes **/
+        "cm_xml": {
+            deps: ["use!codemirror"]
+        },
+        "cm_css": {
+            deps: ["use!codemirror"]
+        },
+        "cm_js": {
+            deps: ["use!codemirror"]
+        },
+        "cm_html": {
+            deps: ["use!codemirror", "use!cm_xml", "use!cm_css", "use!cm_js"]
+        },
+        moment: {
+            attach: "moment"
+        },
+
+        /** CodeMirror addons **/
+        "plugins/cm.foldcode": {
+            deps: ["use!codemirror"]
+        }
+    }
+});
+
 require(["app/webide",
 
 // Libs
