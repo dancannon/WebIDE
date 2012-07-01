@@ -12,7 +12,7 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals",
             defaults: {
                 id: 0,
                 column_sizes: [100/2, 100/2],
-                panel_sizes: [100/3, 100/3, 100/3]
+                panel_sizes: [100/3, 100/3, 100/3, 100]
             }
         });
 
@@ -284,6 +284,7 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals",
                 $(panels[0]).css("height", this.model.get("panel_sizes")[0] + "%");
                 $(panels[1]).css("height", this.model.get("panel_sizes")[1] + "%");
                 $(panels[2]).css("height", this.model.get("panel_sizes")[2] + "%");
+                $(panels[3]).css("height", this.model.get("panel_sizes")[3] + "%");
             },
 
             fullscreen: function(args) {

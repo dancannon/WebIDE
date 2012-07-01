@@ -5,6 +5,69 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
         var Files = webide.module(),
             app = webide.app;
 
+        // Events
+        app.on("file:create", function(args) {
+            if (!app.project.get("files").any(function(file) {
+                return (file.get('name') === args.name) && (file.get('type') === args.type);
+            })) {
+                args.project = app.project;
+                args.selected = true;
+
+                var selected = app.project.get("files").getSelected(args.type);
+                if(selected) {
+                    selected.set("selected", false);
+                }
+
+                var newfile = app.project.get("files").add(new Files.Model(args));
+
+                app.trigger("file:select", {
+                    file: newfile,
+                    type: newfile.get("type")
+                });
+
+            } else {
+                app.trigger("application:notify", {
+                    text: "A file already exists with that name",
+                    type: "error"
+                });
+            }
+        });
+        app.on("file:import", function(args) {
+            if (!app.project.get("files").any(function(file) {
+                return (file.get('name') === args.name) && (file.get('type') === args.type);
+            })) {
+                //Load file
+                $.getJSON('/resource/' + encodeURI(args.url)).success(function(data) {
+                    args.project = app.project;
+                    args.resource = args.url;
+                    args.content = data.content;
+                    args.selected = true;
+
+                    var selected = app.project.get("files").getSelected(args.type);
+                    if(selected) {
+                        selected.set("selected", false);
+                    }
+
+                    var newfile = app.project.get("files").add(new Files.Model(args));
+
+                    app.trigger("file:select", {
+                        file: newfile,
+                        type: newfile.get("type")
+                    });
+                }).error(function(data) {
+                        app.trigger("application:notify", {
+                            message: data.message,
+                            type: "error"
+                        });
+                    });
+            } else {
+                app.trigger("application:notify", {
+                    text: "A file already exists with that name",
+                    type: "error"
+                });
+            }
+        });
+
         Files.Model = Backbone.RelationalModel.extend({
             defaults:{
                 active:true,
@@ -55,70 +118,6 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
         Files.Collection = Backbone.Collection.extend({
             url: globals.baseUrl + '/files',
             model: Files.Model,
-
-            initialize: function() {
-                app.on("file:create", function(args) {
-                    if (!app.project.get("files").any(function(file) {
-                        return (file.get('name') === args.name) && (file.get('type') === args.type);
-                    })) {
-                        args.project = app.project;
-                        args.selected = true;
-
-                        var selected = app.project.get("files").getSelected(args.type);
-                        if(selected) {
-                            selected.set("selected", false);
-                        }
-
-                        var newfile = app.project.get("files").add(new Files.Model(args));
-
-                        app.trigger("file:select", {
-                            file: newfile,
-                            type: newfile.get("type")
-                        });
-
-                    } else {
-                        app.trigger("application:notify", {
-                            text: "A file already exists with that name",
-                            type: "error"
-                        });
-                    }
-                });
-                app.on("file:import", function(args) {
-                    if (!app.project.get("files").any(function(file) {
-                        return (file.get('name') === args.name) && (file.get('type') === args.type);
-                    })) {
-                        //Load file
-                        $.getJSON('/resource/' + encodeURI(args.url)).success(function(data) {
-                            args.project = app.project;
-                            args.resource = args.url;
-                            args.content = data.content;
-                            args.selected = true;
-
-                            var selected = app.project.get("files").getSelected(args.type);
-                            if(selected) {
-                                selected.set("selected", false);
-                            }
-
-                            var newfile = app.project.get("files").add(new Files.Model(args));
-
-                            app.trigger("file:select", {
-                                file: newfile,
-                                type: newfile.get("type")
-                            });
-                        }).error(function(data) {
-                                app.trigger("application:notify", {
-                                    message: data.message,
-                                    type: "error"
-                                });
-                            });
-                    } else {
-                        app.trigger("application:notify", {
-                            text: "A file already exists with that name",
-                            type: "error"
-                        });
-                    }
-                });
-            },
 
             ofType: function (type, callback) {
                 return this.filter(function (file) {

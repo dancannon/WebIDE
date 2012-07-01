@@ -17506,12 +17506,6 @@ function(webide, Backbone) {
 
                 });
 
-                this.$el.on('keypress', function(e) {
-                    if(e.which === 13) {
-                        that.submit();
-                    }
-                });
-
                 this.postRender(el);
             });
         },
@@ -17526,7 +17520,7 @@ function(webide, Backbone) {
 
         submit: function() {
             this.$el.modal("hide");
-            event.preventDefault();
+            return false;
         },
 
         close: function(event) {
@@ -17547,7 +17541,7 @@ function(webide, Backbone) {
             };
         },
 
-        submit: function(event) {
+        submit: function() {
             app.trigger("file:create", {
                 name: this.$el.find("#filename").val(),
                 type: this.$el.find("#filetype").val(),
@@ -17556,10 +17550,12 @@ function(webide, Backbone) {
 
             //After creating new file hide modal
             this.$el.modal("hide");
-            event.preventDefault();
+            return false;
         },
 
         postRender: function(el) {
+            var that = this;
+
             $('form', el).validate({
                 errorElement: "span",
                 errorClass: "help-inline",
@@ -17601,7 +17597,7 @@ function(webide, Backbone) {
 
             //After creating new file hide modal
             this.$el.modal("hide");
-            event.preventDefault();
+            return false;
         },
 
         postRender: function(el) {
@@ -17635,7 +17631,7 @@ function(webide, Backbone) {
             }
 
             this.$el.modal("hide");
-            event.preventDefault();
+            return false;
         },
 
         postRender: function(el) {
@@ -17668,7 +17664,7 @@ function(webide, Backbone) {
 
             //After creating new file hide modal
             this.$el.modal("hide");
-            event.preventDefault();
+            return false;
         }
     });
 
@@ -17683,7 +17679,7 @@ function(webide, Backbone) {
                 trigger: true
             });
 
-            event.preventDefault();
+            return false;
         }
     });
 
@@ -17711,7 +17707,7 @@ function(webide, Backbone) {
             });
 
             this.$el.modal("hide");
-            event.preventDefault();
+            return false;
         },
 
         delete_project: function() {
