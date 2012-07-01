@@ -37,7 +37,7 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
                 return (file.get('name') === args.name) && (file.get('type') === args.type);
             })) {
                 //Load file
-                $.getJSON('/resource/' + encodeURI(args.url)).success(function(data) {
+                $.getJSON('/resource/' + args.url).success(function(data) {
                     args.project = app.project;
                     args.resource = args.url;
                     args.content = data.content;

@@ -31,11 +31,8 @@ function(webide, Backbone) {
                 });
 
                 this.modal.on('hide', function() {
-                    $(':input', el)
-                        .not(':button, :submit, :reset')
-                        .val('')
-                        .removeAttr('checked')
-                        .removeAttr('selected');
+                    $(document).off('keypress.modal');
+                    $(':input', el).not(':button, :submit, :reset').val('').removeAttr('checked').removeAttr('selected');
 
                 });
 
@@ -57,9 +54,6 @@ function(webide, Backbone) {
         },
 
         close: function(event) {
-            //Remove keyboard events
-            $(document).off('keyup.dismiss.modal');
-
             this.remove();
         }
     });
@@ -184,7 +178,21 @@ function(webide, Backbone) {
         }
     });
 
-    Modals.Views.DeleteFile = Modals.Views.Modal.extend({
+    Modals.Views.Confirm = Modals.Views.Modal.extend({
+        postRender: function(el) {
+            var that = this;
+
+            this.modal.on('show', function() {
+                $(document).on('keypress.modal', function(e) {
+                    if(e.which === 13) {
+                        that.submit();
+                    }
+                });
+            });
+        }
+    });
+
+    Modals.Views.DeleteFile = Modals.Views.Confirm.extend({
         id: "delete_file",
         template: "modals/delete_file",
 
@@ -201,7 +209,7 @@ function(webide, Backbone) {
         }
     });
 
-    Modals.Views.DeleteProject = Modals.Views.Modal.extend({
+    Modals.Views.DeleteProject = Modals.Views.Confirm.extend({
         id: "delete_project",
         template: "modals/delete_project",
 

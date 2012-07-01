@@ -248,6 +248,15 @@ function(webide, $, Backbone, _, key, App, Header, Sidebar, Editor, Footer, File
                         app.router.navigate('/', {
                             trigger: true
                         });
+                    } else if (resp.status !== 200) {
+                        app.trigger("application:notify", {
+                            text: "An error occured",
+                            type: "error",
+                            layout: "top"
+                        });
+                        app.router.navigate('/', {
+                            trigger: true
+                        });
                     }
                 }
             });
@@ -281,6 +290,15 @@ function(webide, $, Backbone, _, key, App, Header, Sidebar, Editor, Footer, File
                     if (resp.status === 404) {
                         app.trigger("application:notify", {
                             text: "That project could not be found",
+                            type: "error",
+                            layout: "top"
+                        });
+                        app.router.navigate('/', {
+                            trigger: true
+                        });
+                    } else if (resp.status !== 200) {
+                        app.trigger("application:notify", {
+                            text: "An error occured",
                             type: "error",
                             layout: "top"
                         });

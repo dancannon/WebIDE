@@ -17498,11 +17498,8 @@ function(webide, Backbone) {
                 });
 
                 this.modal.on('hide', function() {
-                    $(':input', el)
-                        .not(':button, :submit, :reset')
-                        .val('')
-                        .removeAttr('checked')
-                        .removeAttr('selected');
+                    $(document).off('keypress.modal');
+                    $(':input', el).not(':button, :submit, :reset').val('').removeAttr('checked').removeAttr('selected');
 
                 });
 
@@ -17524,9 +17521,6 @@ function(webide, Backbone) {
         },
 
         close: function(event) {
-            //Remove keyboard events
-            $(document).off('keyup.dismiss.modal');
-
             this.remove();
         }
     });
@@ -17651,7 +17645,21 @@ function(webide, Backbone) {
         }
     });
 
-    Modals.Views.DeleteFile = Modals.Views.Modal.extend({
+    Modals.Views.Confirm = Modals.Views.Modal.extend({
+        postRender: function(el) {
+            var that = this;
+
+            this.modal.on('show', function() {
+                $(document).on('keypress.modal', function(e) {
+                    if(e.which === 13) {
+                        that.submit();
+                    }
+                });
+            });
+        }
+    });
+
+    Modals.Views.DeleteFile = Modals.Views.Confirm.extend({
         id: "delete_file",
         template: "modals/delete_file",
 
@@ -17668,7 +17676,7 @@ function(webide, Backbone) {
         }
     });
 
-    Modals.Views.DeleteProject = Modals.Views.Modal.extend({
+    Modals.Views.DeleteProject = Modals.Views.Confirm.extend({
         id: "delete_project",
         template: "modals/delete_project",
 
@@ -19584,6 +19592,69 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
         var Files = webide.module(),
             app = webide.app;
 
+        // Events
+        app.on("file:create", function(args) {
+            if (!app.project.get("files").any(function(file) {
+                return (file.get('name') === args.name) && (file.get('type') === args.type);
+            })) {
+                args.project = app.project;
+                args.selected = true;
+
+                var selected = app.project.get("files").getSelected(args.type);
+                if(selected) {
+                    selected.set("selected", false);
+                }
+
+                var newfile = app.project.get("files").add(new Files.Model(args));
+
+                app.trigger("file:select", {
+                    file: newfile,
+                    type: newfile.get("type")
+                });
+
+            } else {
+                app.trigger("application:notify", {
+                    text: "A file already exists with that name",
+                    type: "error"
+                });
+            }
+        });
+        app.on("file:import", function(args) {
+            if (!app.project.get("files").any(function(file) {
+                return (file.get('name') === args.name) && (file.get('type') === args.type);
+            })) {
+                //Load file
+                $.getJSON('/resource/' + args.url).success(function(data) {
+                    args.project = app.project;
+                    args.resource = args.url;
+                    args.content = data.content;
+                    args.selected = true;
+
+                    var selected = app.project.get("files").getSelected(args.type);
+                    if(selected) {
+                        selected.set("selected", false);
+                    }
+
+                    var newfile = app.project.get("files").add(new Files.Model(args));
+
+                    app.trigger("file:select", {
+                        file: newfile,
+                        type: newfile.get("type")
+                    });
+                }).error(function(data) {
+                        app.trigger("application:notify", {
+                            message: data.message,
+                            type: "error"
+                        });
+                    });
+            } else {
+                app.trigger("application:notify", {
+                    text: "A file already exists with that name",
+                    type: "error"
+                });
+            }
+        });
+
         Files.Model = Backbone.RelationalModel.extend({
             defaults:{
                 active:true,
@@ -19634,70 +19705,6 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
         Files.Collection = Backbone.Collection.extend({
             url: globals.baseUrl + '/files',
             model: Files.Model,
-
-            initialize: function() {
-                app.on("file:create", function(args) {
-                    if (!app.project.get("files").any(function(file) {
-                        return (file.get('name') === args.name) && (file.get('type') === args.type);
-                    })) {
-                        args.project = app.project;
-                        args.selected = true;
-
-                        var selected = app.project.get("files").getSelected(args.type);
-                        if(selected) {
-                            selected.set("selected", false);
-                        }
-
-                        var newfile = app.project.get("files").add(new Files.Model(args));
-
-                        app.trigger("file:select", {
-                            file: newfile,
-                            type: newfile.get("type")
-                        });
-
-                    } else {
-                        app.trigger("application:notify", {
-                            text: "A file already exists with that name",
-                            type: "error"
-                        });
-                    }
-                });
-                app.on("file:import", function(args) {
-                    if (!app.project.get("files").any(function(file) {
-                        return (file.get('name') === args.name) && (file.get('type') === args.type);
-                    })) {
-                        //Load file
-                        $.getJSON('/resource/' + encodeURI(args.url)).success(function(data) {
-                            args.project = app.project;
-                            args.resource = args.url;
-                            args.content = data.content;
-                            args.selected = true;
-
-                            var selected = app.project.get("files").getSelected(args.type);
-                            if(selected) {
-                                selected.set("selected", false);
-                            }
-
-                            var newfile = app.project.get("files").add(new Files.Model(args));
-
-                            app.trigger("file:select", {
-                                file: newfile,
-                                type: newfile.get("type")
-                            });
-                        }).error(function(data) {
-                                app.trigger("application:notify", {
-                                    message: data.message,
-                                    type: "error"
-                                });
-                            });
-                    } else {
-                        app.trigger("application:notify", {
-                            text: "A file already exists with that name",
-                            type: "error"
-                        });
-                    }
-                });
-            },
 
             ofType: function (type, callback) {
                 return this.filter(function (file) {
@@ -25674,7 +25681,7 @@ define('app/modules/editor',["app/webide", "use!backbone", "app/modules/files", 
             defaults: {
                 id: 0,
                 column_sizes: [100/2, 100/2],
-                panel_sizes: [100/3, 100/3, 100/3]
+                panel_sizes: [100/3, 100/3, 100/3, 100]
             }
         });
 
@@ -25946,6 +25953,7 @@ define('app/modules/editor',["app/webide", "use!backbone", "app/modules/files", 
                 $(panels[0]).css("height", this.model.get("panel_sizes")[0] + "%");
                 $(panels[1]).css("height", this.model.get("panel_sizes")[1] + "%");
                 $(panels[2]).css("height", this.model.get("panel_sizes")[2] + "%");
+                $(panels[3]).css("height", this.model.get("panel_sizes")[3] + "%");
             },
 
             fullscreen: function(args) {
@@ -26522,6 +26530,15 @@ function(webide, $, Backbone, _, key, App, Header, Sidebar, Editor, Footer, File
                         app.router.navigate('/', {
                             trigger: true
                         });
+                    } else if (resp.status !== 200) {
+                        app.trigger("application:notify", {
+                            text: "An error occured",
+                            type: "error",
+                            layout: "top"
+                        });
+                        app.router.navigate('/', {
+                            trigger: true
+                        });
                     }
                 }
             });
@@ -26555,6 +26572,15 @@ function(webide, $, Backbone, _, key, App, Header, Sidebar, Editor, Footer, File
                     if (resp.status === 404) {
                         app.trigger("application:notify", {
                             text: "That project could not be found",
+                            type: "error",
+                            layout: "top"
+                        });
+                        app.router.navigate('/', {
+                            trigger: true
+                        });
+                    } else if (resp.status !== 200) {
+                        app.trigger("application:notify", {
+                            text: "An error occured",
                             type: "error",
                             layout: "top"
                         });
