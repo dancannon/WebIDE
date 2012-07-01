@@ -5,32 +5,23 @@ webide_site_default:
 webide_site_api_file:
     type:     rest
     resource: "WebIDE\SiteBundle\Controller\FileController"
-    options:
-        expose: true
 
 webide_site_api_project:
     type:     rest
     resource: "WebIDE\SiteBundle\Controller\\ProjectController"
-    options:
-        expose: true
 
 webide_site_api_resource:
     type:     rest
     resource: "WebIDE\SiteBundle\Controller\ResourceController"
-    options:
-        expose: true
 
 fos_js_routing:
     resource: "@FOSJsRoutingBundle/Resources/config/routing/routing.xml"
 
 fos_user_security:
     resource: "@FOSUserBundle/Resources/config/routing/security.xml"
-    options:
-        expose: true
 
-#fos_user_profile:
-#    resource: "@FOSUserBundle/Resources/config/routing/profile.xml"
-#    prefix: /profile
+fos_user_profile:
+    resource: "@WebIDEUserBundle/Resources/config/routing/profile.xml"
 
 fos_user_register:
     resource: "@FOSUserBundle/Resources/config/routing/registration.xml"

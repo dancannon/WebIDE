@@ -6104,7 +6104,7 @@ jQuery.buildFragment = function( args, nodes, scripts ) {
 	// Cloning options loses the selected state, so don't cache them
 	// IE 6 doesn't like it when you put <object> or <embed> elements in a fragment
 	// Also, WebKit does not clone 'checked' attributes on cloneNode, so don't cache
-	// Lastly, IE6,7,8 will not correctly reuse cached fragments that were created from unknown elems #10501
+	// Lastly, IE6,7,8 will not correctly reuse cached fragments that were createdAt from unknown elems #10501
 	if ( args.length === 1 && typeof first === "string" && first.length < 512 && doc === document &&
 		first.charAt(0) === "<" && !rnocache.test( first ) &&
 		(jQuery.support.checkClone || !rchecked.test( first )) &&
@@ -6290,10 +6290,10 @@ jQuery.extend({
 
 					// Append wrapper element to unknown element safe doc fragment
 					if ( context === document ) {
-						// Use the fragment we've already created for this document
+						// Use the fragment we've already createdAt for this document
 						safeFragment.appendChild( div );
 					} else {
-						// Use a fragment created with the owner document
+						// Use a fragment createdAt with the owner document
 						createSafeFragment( context ).appendChild( div );
 					}
 
@@ -8530,7 +8530,7 @@ jQuery.fn.extend({
 
 });
 
-// Animations created synchronously will run synchronously
+// Animations createdAt synchronously will run synchronously
 function createFxNow() {
 	setTimeout( clearFxNow, 0 );
 	return ( fxNow = jQuery.now() );

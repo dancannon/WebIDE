@@ -150,7 +150,7 @@ var CodeMirror = (function() {
         // local functions in the CodeMirror function. Some do some extra
         // range checking and/or clipping. operation is used to wrap the
         // call so that changes it makes are tracked, and the display is
-        // updated afterwards.
+        // updatedAt afterwards.
         var instance = wrapper.CodeMirror = {
             getValue: getValue,
             setValue: operation(setValue),
@@ -4110,7 +4110,7 @@ CodeMirror.modeExtensions["htmlmixed"] = {
         CodeMirror.connect(sel, "dblclick", pick);
 
         sel.focus();
-        // Opera sometimes ignores focusing a freshly created node
+        // Opera sometimes ignores focusing a freshly createdAt node
         if (window.opera) setTimeout(function(){if (!done) sel.focus();}, 100);
         return true;
     };

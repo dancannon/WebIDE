@@ -6105,7 +6105,7 @@ jQuery.buildFragment = function( args, nodes, scripts ) {
 	// Cloning options loses the selected state, so don't cache them
 	// IE 6 doesn't like it when you put <object> or <embed> elements in a fragment
 	// Also, WebKit does not clone 'checked' attributes on cloneNode, so don't cache
-	// Lastly, IE6,7,8 will not correctly reuse cached fragments that were created from unknown elems #10501
+	// Lastly, IE6,7,8 will not correctly reuse cached fragments that were createdAt from unknown elems #10501
 	if ( args.length === 1 && typeof first === "string" && first.length < 512 && doc === document &&
 		first.charAt(0) === "<" && !rnocache.test( first ) &&
 		(jQuery.support.checkClone || !rchecked.test( first )) &&
@@ -6291,10 +6291,10 @@ jQuery.extend({
 
 					// Append wrapper element to unknown element safe doc fragment
 					if ( context === document ) {
-						// Use the fragment we've already created for this document
+						// Use the fragment we've already createdAt for this document
 						safeFragment.appendChild( div );
 					} else {
-						// Use a fragment created with the owner document
+						// Use a fragment createdAt with the owner document
 						createSafeFragment( context ).appendChild( div );
 					}
 
@@ -8531,7 +8531,7 @@ jQuery.fn.extend({
 
 });
 
-// Animations created synchronously will run synchronously
+// Animations createdAt synchronously will run synchronously
 function createFxNow() {
 	setTimeout( clearFxNow, 0 );
 	return ( fxNow = jQuery.now() );
@@ -12351,7 +12351,7 @@ define('use!handlebars', [], function() {return typeof Handlebars !== "undefined
             }
 
             // After a successful server-side save, the client is (optionally)
-            // updated with the server-side state.
+            // updatedAt with the server-side state.
             var model = this;
             var success = options.success;
             options.success = function (resp, status, xhr) {
@@ -12477,7 +12477,7 @@ define('use!handlebars', [], function() {return typeof Handlebars !== "undefined
 
         // Return an object containing all the attributes that have changed, or
         // false if there are no changed attributes. Useful for determining what
-        // parts of a view need to be updated and/or what attributes need to be
+        // parts of a view need to be updatedAt and/or what attributes need to be
         // persisted to the server. Unset attributes will be set to undefined.
         // You can also pass an attributes object to diff against the model,
         // determining if there *would be* a change.
@@ -13597,12 +13597,19 @@ define('app/templating',["jquery", "use!handlebars", "use!moment", "use!plugins/
             return new Date();
         });
         Handlebars.registerHelper('dateFormat', function(context, block) {
-            if (moment) {
-                var f = block.hash.format || "MMM Mo, YYYY";
-                return moment(context || new Date()).format(f);
-            }else{
-                return context;
+            var format;
+
+            if(!(context instanceof Date)) {
+                context = new Date();
             }
+            if(block) {
+                if(typeof block.hash !== "undefined" && typeof block.hash.format !== "undefined") {
+                    format = block.hash.format;
+                } else {
+                    format = "MMM Mo, YYYY";
+                }
+            }
+            return moment(context).format(format);
         });
         Handlebars.registerHelper('url', function(url) {
             return globals.baseUrl + url;
@@ -13756,7 +13763,7 @@ define('app/templating',["jquery", "use!handlebars", "use!moment", "use!plugins/
                 LayoutManager.setupView(view, options);
 
                 // If no render override was specified assign the default; if the render
-                // is the fake function inserted, ensure that is updated as well.
+                // is the fake function inserted, ensure that is updatedAt as well.
                 if (view.render.__fake__) {
                     view._render = function(manage) {
                         return manage(this).render();
@@ -13787,7 +13794,7 @@ define('app/templating',["jquery", "use!handlebars", "use!moment", "use!plugins/
                         // Resolve the View's render handler deferred.
                         view.__manager__.handler.resolveWith(view, [view.el]);
 
-                        // When a view has been resolved, ensure that it is correctly updated
+                        // When a view has been resolved, ensure that it is correctly updatedAt
                         // and that any done callbacks are triggered.
                         viewDeferred.resolveWith(view, [view.el]);
 
@@ -14381,6 +14388,194 @@ define('app/webide',[
             app:_.extend({}, Backbone.Events)
         };
     });
+
+//     keymaster.js
+//     (c) 2011 Thomas Fuchs
+//     keymaster.js may be freely distributed under the MIT license.
+
+;(function(global){
+    var k,
+        _handlers = {},
+        _mods = { 16: false, 18: false, 17: false, 91: false },
+        _scope = 'all',
+    // modifier keys
+        _MODIFIERS = {
+            '⇧': 16, shift: 16,
+            '⌥': 18, alt: 18, option: 18,
+            '⌃': 17, ctrl: 17, control: 17,
+            '⌘': 91, command: 91
+        },
+    // special keys
+        _MAP = {
+            backspace: 8, tab: 9, clear: 12,
+            enter: 13, 'return': 13,
+            esc: 27, escape: 27, space: 32,
+            left: 37, up: 38,
+            right: 39, down: 40,
+            del: 46, 'delete': 46,
+            home: 36, end: 35,
+            pageup: 33, pagedown: 34,
+            ',': 188, '.': 190, '/': 191,
+            '`': 192, '-': 189, '=': 187,
+            ';': 186, '\'': 222,
+            '[': 219, ']': 221, '\\': 220
+        };
+
+    for(k=1;k<20;k++) _MODIFIERS['f'+k] = 111+k;
+
+    // IE doesn't support Array#indexOf, so have a simple replacement
+    function index(array, item){
+        var i = array.length;
+        while(i--) if(array[i]===item) return i;
+        return -1;
+    }
+
+    // handle keydown event
+    function dispatch(event){
+        var key, handler, k, i, modifiersMatch;
+        key = event.keyCode;
+
+        // if a modifier key, set the key.<modifierkeyname> property to true and return
+        if(key == 93 || key == 224) key = 91; // right command on webkit, command on Gecko
+        if(key in _mods) {
+            _mods[key] = true;
+            // 'assignKey' from inside this closure is exported to window.key
+            for(k in _MODIFIERS) if(_MODIFIERS[k] == key) assignKey[k] = true;
+            return;
+        }
+
+        // see if we need to ignore the keypress (ftiler() can can be overridden)
+        // by default ignore key presses if a select, textarea, or input is focused
+        if(!assignKey.filter.call(this, event)) return;
+
+        // abort if no potentially matching shortcuts found
+        if (!(key in _handlers)) return;
+
+        // for each potential shortcut
+        for (i = 0; i < _handlers[key].length; i++) {
+            handler = _handlers[key][i];
+
+            // see if it's in the current scope
+            if(handler.scope == _scope || handler.scope == 'all'){
+                // check if modifiers match if any
+                modifiersMatch = handler.mods.length > 0;
+                for(k in _mods)
+                    if((!_mods[k] && index(handler.mods, +k) > -1) ||
+                        (_mods[k] && index(handler.mods, +k) == -1)) modifiersMatch = false;
+                // call the handler and stop the event if neccessary
+                if((handler.mods.length == 0 && !_mods[16] && !_mods[18] && !_mods[17] && !_mods[91]) || modifiersMatch){
+                    if(handler.method(event, handler)===false){
+                        if(event.preventDefault) event.preventDefault();
+                        else event.returnValue = false;
+                        if(event.stopPropagation) event.stopPropagation();
+                        if(event.cancelBubble) event.cancelBubble = true;
+                    }
+                }
+            }
+        }
+    };
+
+    // unset modifier keys on keyup
+    function clearModifier(event){
+        var key = event.keyCode, k;
+        if(key == 93 || key == 224) key = 91;
+        if(key in _mods) {
+            _mods[key] = false;
+            for(k in _MODIFIERS) if(_MODIFIERS[k] == key) assignKey[k] = false;
+        }
+    };
+
+    function resetModifiers() {
+        for(k in _mods) _mods[k] = false;
+        for(k in _MODIFIERS) assignKey[k] = false;
+    }
+
+    // parse and assign shortcut
+    function assignKey(key, scope, method){
+        var keys, mods, i, mi;
+        if (method === undefined) {
+            method = scope;
+            scope = 'all';
+        }
+        key = key.replace(/\s/g,'');
+        keys = key.split(',');
+
+        if((keys[keys.length-1])=='')
+            keys[keys.length-2] += ',';
+        // for each shortcut
+        for (i = 0; i < keys.length; i++) {
+            // set modifier keys if any
+            mods = [];
+            key = keys[i].split('+');
+            if(key.length > 1){
+                mods = key.slice(0,key.length-1);
+                for (mi = 0; mi < mods.length; mi++)
+                    mods[mi] = _MODIFIERS[mods[mi]];
+                key = [key[key.length-1]];
+            }
+            // convert to keycode and...
+            key = key[0]
+            key = _MAP[key] || key.toUpperCase().charCodeAt(0);
+            // ...store handler
+            if (!(key in _handlers)) _handlers[key] = [];
+            _handlers[key].push({ shortcut: keys[i], scope: scope, method: method, key: keys[i], mods: mods });
+        }
+    };
+
+    function filter(event){
+        var tagName = (event.target || event.srcElement).tagName;
+        // ignore keypressed in any elements that support keyboard data input
+        return !(tagName == 'INPUT' || tagName == 'SELECT' || tagName == 'TEXTAREA');
+    }
+
+    // initialize key.<modifier> to false
+    for(k in _MODIFIERS) assignKey[k] = false;
+
+    // set current scope (default 'all')
+    function setScope(scope){ _scope = scope || 'all' };
+    function getScope(){ return _scope || 'all' };
+
+    // delete all handlers for a given scope
+    function deleteScope(scope){
+        var key, handlers, i;
+
+        for (key in _handlers) {
+            handlers = _handlers[key];
+            for (i = 0; i < handlers.length; ) {
+                if (handlers[i].scope === scope) handlers.splice(i, 1);
+                else i++;
+            }
+        }
+    };
+
+    // cross-browser events
+    function addEvent(object, event, method) {
+        if (object.addEventListener)
+            object.addEventListener(event, method, false);
+        else if(object.attachEvent)
+            object.attachEvent('on'+event, function(){ method(window.event) });
+    };
+
+    // set the handlers globally on document
+    addEvent(document, 'keydown', dispatch);
+    addEvent(document, 'keyup', clearModifier);
+
+    // reset modifiers to false whenever the window is (re)focused.
+    addEvent(window, 'focus', resetModifiers);
+
+    // set window.key and window.key.set/get/deleteScope, and the default filter
+    global.key = assignKey;
+    global.key.setScope = setScope;
+    global.key.getScope = getScope;
+    global.key.deleteScope = deleteScope;
+    global.key.filter = filter;
+
+    if(typeof module !== 'undefined') module.exports = key;
+
+})(this);
+define("keymaster", function(){});
+
+define('use!keymaster', [], function() {return typeof key !== "undefined" ? key : void 0;});
 
 /*!
  * jQuery UI 1.8.18
@@ -16009,9 +16204,1270 @@ define("bootstrap", function(){});
 
 define('use!bootstrap', ['jquery'], function() {return typeof undefined !== "undefined" ? undefined : void 0;});
 
-define('app/modules/modals',["app/webide","use!backbone", "jquery", "jqueryui", "use!bootstrap"],
+/**
+ * jQuery Validation Plugin @VERSION
+ *
+ * http://bassistance.de/jquery-plugins/jquery-plugin-validation/
+ * http://docs.jquery.com/Plugins/Validation
+ *
+ * Copyright (c) 2012 Jörn Zaefferer
+ *
+ * Dual licensed under the MIT and GPL licenses:
+ *   http://www.opensource.org/licenses/mit-license.php
+ *   http://www.gnu.org/licenses/gpl.html
+ */
 
-function(webide, Backbone, Files) {
+(function($) {
+
+    $.extend($.fn, {
+        // http://docs.jquery.com/Plugins/Validation/validate
+        validate: function( options ) {
+
+            // if nothing is selected, return nothing; can't chain anyway
+            if (!this.length) {
+                if (options && options.debug && window.console) {
+                    console.warn( "nothing selected, can't validate, returning nothing" );
+                }
+                return;
+            }
+
+            // check if a validator for this form was already createdAt
+            var validator = $.data(this[0], 'validator');
+            if ( validator ) {
+                return validator;
+            }
+
+            // Add novalidate tag if HTML5.
+            this.attr('novalidate', 'novalidate');
+
+            validator = new $.validator( options, this[0] );
+            $.data(this[0], 'validator', validator);
+
+            if ( validator.settings.onsubmit ) {
+
+                this.validateDelegate( ":submit", "click", function(ev) {
+                    if ( validator.settings.submitHandler ) {
+                        validator.submitButton = ev.target;
+                    }
+                    // allow suppressing validation by adding a cancel class to the submit button
+                    if ( $(ev.target).hasClass('cancel') ) {
+                        validator.cancelSubmit = true;
+                    }
+                });
+
+                // validate the form on submit
+                this.submit( function( event ) {
+                    if ( validator.settings.debug ) {
+                        // prevent form submit to be able to see console output
+                        event.preventDefault();
+                    }
+                    function handle() {
+                        var hidden;
+                        if ( validator.settings.submitHandler ) {
+                            if (validator.submitButton) {
+                                // insert a hidden input as a replacement for the missing submit button
+                                hidden = $("<input type='hidden'/>").attr("name", validator.submitButton.name).val(validator.submitButton.value).appendTo(validator.currentForm);
+                            }
+                            validator.settings.submitHandler.call( validator, validator.currentForm, event );
+                            if (validator.submitButton) {
+                                // and clean up afterwards; thanks to no-block-scope, hidden can be referenced
+                                hidden.remove();
+                            }
+                            return false;
+                        }
+                        return true;
+                    }
+
+                    // prevent submit for invalid forms or custom submit handlers
+                    if ( validator.cancelSubmit ) {
+                        validator.cancelSubmit = false;
+                        return handle();
+                    }
+                    if ( validator.form() ) {
+                        if ( validator.pendingRequest ) {
+                            validator.formSubmitted = true;
+                            return false;
+                        }
+                        return handle();
+                    } else {
+                        validator.focusInvalid();
+                        return false;
+                    }
+                });
+            }
+
+            return validator;
+        },
+        // http://docs.jquery.com/Plugins/Validation/valid
+        valid: function() {
+            if ( $(this[0]).is('form')) {
+                return this.validate().form();
+            } else {
+                var valid = true;
+                var validator = $(this[0].form).validate();
+                this.each(function() {
+                    valid &= validator.element(this);
+                });
+                return valid;
+            }
+        },
+        // attributes: space seperated list of attributes to retrieve and remove
+        removeAttrs: function(attributes) {
+            var result = {},
+                $element = this;
+            $.each(attributes.split(/\s/), function(index, value) {
+                result[value] = $element.attr(value);
+                $element.removeAttr(value);
+            });
+            return result;
+        },
+        // http://docs.jquery.com/Plugins/Validation/rules
+        rules: function(command, argument) {
+            var element = this[0];
+
+            if (command) {
+                var settings = $.data(element.form, 'validator').settings;
+                var staticRules = settings.rules;
+                var existingRules = $.validator.staticRules(element);
+                switch(command) {
+                    case "add":
+                        $.extend(existingRules, $.validator.normalizeRule(argument));
+                        staticRules[element.name] = existingRules;
+                        if (argument.messages) {
+                            settings.messages[element.name] = $.extend( settings.messages[element.name], argument.messages );
+                        }
+                        break;
+                    case "remove":
+                        if (!argument) {
+                            delete staticRules[element.name];
+                            return existingRules;
+                        }
+                        var filtered = {};
+                        $.each(argument.split(/\s/), function(index, method) {
+                            filtered[method] = existingRules[method];
+                            delete existingRules[method];
+                        });
+                        return filtered;
+                }
+            }
+
+            var data = $.validator.normalizeRules(
+                $.extend(
+                    {},
+                    $.validator.metadataRules(element),
+                    $.validator.classRules(element),
+                    $.validator.attributeRules(element),
+                    $.validator.staticRules(element)
+                ), element);
+
+            // make sure required is at front
+            if (data.required) {
+                var param = data.required;
+                delete data.required;
+                data = $.extend({required: param}, data);
+            }
+
+            return data;
+        }
+    });
+
+// Custom selectors
+    $.extend($.expr[":"], {
+        // http://docs.jquery.com/Plugins/Validation/blank
+        blank: function(a) {return !$.trim("" + a.value);},
+        // http://docs.jquery.com/Plugins/Validation/filled
+        filled: function(a) {return !!$.trim("" + a.value);},
+        // http://docs.jquery.com/Plugins/Validation/unchecked
+        unchecked: function(a) {return !a.checked;}
+    });
+
+// constructor for validator
+    $.validator = function( options, form ) {
+        this.settings = $.extend( true, {}, $.validator.defaults, options );
+        this.currentForm = form;
+        this.init();
+    };
+
+    $.validator.format = function(source, params) {
+        if ( arguments.length === 1 ) {
+            return function() {
+                var args = $.makeArray(arguments);
+                args.unshift(source);
+                return $.validator.format.apply( this, args );
+            };
+        }
+        if ( arguments.length > 2 && params.constructor !== Array  ) {
+            params = $.makeArray(arguments).slice(1);
+        }
+        if ( params.constructor !== Array ) {
+            params = [ params ];
+        }
+        $.each(params, function(i, n) {
+            source = source.replace(new RegExp("\\{" + i + "\\}", "g"), n);
+        });
+        return source;
+    };
+
+    $.extend($.validator, {
+
+        defaults: {
+            messages: {},
+            groups: {},
+            rules: {},
+            errorClass: "error",
+            validClass: "valid",
+            errorElement: "label",
+            focusInvalid: true,
+            errorContainer: $( [] ),
+            errorLabelContainer: $( [] ),
+            onsubmit: true,
+            ignore: ":hidden",
+            ignoreTitle: false,
+            onfocusin: function(element, event) {
+                this.lastActive = element;
+
+                // hide error label and remove error class on focus if enabled
+                if ( this.settings.focusCleanup && !this.blockFocusCleanup ) {
+                    if ( this.settings.unhighlight ) {
+                        this.settings.unhighlight.call( this, element, this.settings.errorClass, this.settings.validClass );
+                    }
+                    this.addWrapper(this.errorsFor(element)).hide();
+                }
+            },
+            onfocusout: function(element, event) {
+                if ( !this.checkable(element) && (element.name in this.submitted || !this.optional(element)) ) {
+                    this.element(element);
+                }
+            },
+            onkeyup: function(element, event) {
+                if ( event.which == 9 && this.elementValue(element) === '' ) {
+                    return;
+                } else if ( element.name in this.submitted || element === this.lastActive ) {
+                    this.element(element);
+                }
+            },
+            onclick: function(element, event) {
+                // click on selects, radiobuttons and checkboxes
+                if ( element.name in this.submitted ) {
+                    this.element(element);
+                }
+                // or option elements, check parent select in that case
+                else if (element.parentNode.name in this.submitted) {
+                    this.element(element.parentNode);
+                }
+            },
+            highlight: function(element, errorClass, validClass) {
+                if (element.type === 'radio') {
+                    this.findByName(element.name).addClass(errorClass).removeClass(validClass);
+                } else {
+                    $(element).addClass(errorClass).removeClass(validClass);
+                }
+            },
+            unhighlight: function(element, errorClass, validClass) {
+                if (element.type === 'radio') {
+                    this.findByName(element.name).removeClass(errorClass).addClass(validClass);
+                } else {
+                    $(element).removeClass(errorClass).addClass(validClass);
+                }
+            }
+        },
+
+        // http://docs.jquery.com/Plugins/Validation/Validator/setDefaults
+        setDefaults: function(settings) {
+            $.extend( $.validator.defaults, settings );
+        },
+
+        messages: {
+            required: "This field is required.",
+            remote: "Please fix this field.",
+            email: "Please enter a valid email address.",
+            url: "Please enter a valid URL.",
+            date: "Please enter a valid date.",
+            dateISO: "Please enter a valid date (ISO).",
+            number: "Please enter a valid number.",
+            digits: "Please enter only digits.",
+            creditcard: "Please enter a valid credit card number.",
+            equalTo: "Please enter the same value again.",
+            maxlength: $.validator.format("Please enter no more than {0} characters."),
+            minlength: $.validator.format("Please enter at least {0} characters."),
+            rangelength: $.validator.format("Please enter a value between {0} and {1} characters long."),
+            range: $.validator.format("Please enter a value between {0} and {1}."),
+            max: $.validator.format("Please enter a value less than or equal to {0}."),
+            min: $.validator.format("Please enter a value greater than or equal to {0}.")
+        },
+
+        autoCreateRanges: false,
+
+        prototype: {
+
+            init: function() {
+                this.labelContainer = $(this.settings.errorLabelContainer);
+                this.errorContext = this.labelContainer.length && this.labelContainer || $(this.currentForm);
+                this.containers = $(this.settings.errorContainer).add( this.settings.errorLabelContainer );
+                this.submitted = {};
+                this.valueCache = {};
+                this.pendingRequest = 0;
+                this.pending = {};
+                this.invalid = {};
+                this.reset();
+
+                var groups = (this.groups = {});
+                $.each(this.settings.groups, function(key, value) {
+                    $.each(value.split(/\s/), function(index, name) {
+                        groups[name] = key;
+                    });
+                });
+                var rules = this.settings.rules;
+                $.each(rules, function(key, value) {
+                    rules[key] = $.validator.normalizeRule(value);
+                });
+
+                function delegate(event) {
+                    var validator = $.data(this[0].form, "validator"),
+                        eventType = "on" + event.type.replace(/^validate/, "");
+                    if (validator.settings[eventType]) {
+                        validator.settings[eventType].call(validator, this[0], event);
+                    }
+                }
+                $(this.currentForm)
+                    .validateDelegate(":text, [type='password'], [type='file'], select, textarea, " +
+                    "[type='number'], [type='search'] ,[type='tel'], [type='url'], " +
+                    "[type='email'], [type='datetime'], [type='date'], [type='month'], " +
+                    "[type='week'], [type='time'], [type='datetime-local'], " +
+                    "[type='range'], [type='color'] ",
+                    "focusin focusout keyup", delegate)
+                    .validateDelegate("[type='radio'], [type='checkbox'], select, option", "click", delegate);
+
+                if (this.settings.invalidHandler) {
+                    $(this.currentForm).bind("invalid-form.validate", this.settings.invalidHandler);
+                }
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Validator/form
+            form: function() {
+                this.checkForm();
+                $.extend(this.submitted, this.errorMap);
+                this.invalid = $.extend({}, this.errorMap);
+                if (!this.valid()) {
+                    $(this.currentForm).triggerHandler("invalid-form", [this]);
+                }
+                this.showErrors();
+                return this.valid();
+            },
+
+            checkForm: function() {
+                this.prepareForm();
+                for ( var i = 0, elements = (this.currentElements = this.elements()); elements[i]; i++ ) {
+                    this.check( elements[i] );
+                }
+                return this.valid();
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Validator/element
+            element: function( element ) {
+                element = this.validationTargetFor( this.clean( element ) );
+                this.lastElement = element;
+                this.prepareElement( element );
+                this.currentElements = $(element);
+                var result = this.check( element ) !== false;
+                if (result) {
+                    delete this.invalid[element.name];
+                } else {
+                    this.invalid[element.name] = true;
+                }
+                if ( !this.numberOfInvalids() ) {
+                    // Hide error containers on last error
+                    this.toHide = this.toHide.add( this.containers );
+                }
+                this.showErrors();
+                return result;
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Validator/showErrors
+            showErrors: function(errors) {
+                if(errors) {
+                    // add items to error list and map
+                    $.extend( this.errorMap, errors );
+                    this.errorList = [];
+                    for ( var name in errors ) {
+                        this.errorList.push({
+                            message: errors[name],
+                            element: this.findByName(name)[0]
+                        });
+                    }
+                    // remove items from success list
+                    this.successList = $.grep( this.successList, function(element) {
+                        return !(element.name in errors);
+                    });
+                }
+                if (this.settings.showErrors) {
+                    this.settings.showErrors.call( this, this.errorMap, this.errorList );
+                } else {
+                    this.defaultShowErrors();
+                }
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Validator/resetForm
+            resetForm: function() {
+                if ( $.fn.resetForm ) {
+                    $( this.currentForm ).resetForm();
+                }
+                this.submitted = {};
+                this.lastElement = null;
+                this.prepareForm();
+                this.hideErrors();
+                this.elements().removeClass( this.settings.errorClass ).removeData( "previousValue" );
+            },
+
+            numberOfInvalids: function() {
+                return this.objectLength(this.invalid);
+            },
+
+            objectLength: function( obj ) {
+                var count = 0;
+                for ( var i in obj ) {
+                    count++;
+                }
+                return count;
+            },
+
+            hideErrors: function() {
+                this.addWrapper( this.toHide ).hide();
+            },
+
+            valid: function() {
+                return this.size() === 0;
+            },
+
+            size: function() {
+                return this.errorList.length;
+            },
+
+            focusInvalid: function() {
+                if( this.settings.focusInvalid ) {
+                    try {
+                        $(this.findLastActive() || this.errorList.length && this.errorList[0].element || [])
+                            .filter(":visible")
+                            .focus()
+                            // manually trigger focusin event; without it, focusin handler isn't called, findLastActive won't have anything to find
+                            .trigger("focusin");
+                    } catch(e) {
+                        // ignore IE throwing errors when focusing hidden elements
+                    }
+                }
+            },
+
+            findLastActive: function() {
+                var lastActive = this.lastActive;
+                return lastActive && $.grep(this.errorList, function(n) {
+                    return n.element.name === lastActive.name;
+                }).length === 1 && lastActive;
+            },
+
+            elements: function() {
+                var validator = this,
+                    rulesCache = {};
+
+                // select all valid inputs inside the form (no submit or reset buttons)
+                return $(this.currentForm)
+                    .find("input, select, textarea")
+                    .not(":submit, :reset, :image, [disabled]")
+                    .not( this.settings.ignore )
+                    .filter(function() {
+                        if ( !this.name && validator.settings.debug && window.console ) {
+                            console.error( "%o has no name assigned", this);
+                        }
+
+                        // select only the first element for each name, and only those with rules specified
+                        if ( this.name in rulesCache || !validator.objectLength($(this).rules()) ) {
+                            return false;
+                        }
+
+                        rulesCache[this.name] = true;
+                        return true;
+                    });
+            },
+
+            clean: function( selector ) {
+                return $( selector )[0];
+            },
+
+            errors: function() {
+                var errorClass = this.settings.errorClass.replace(' ', '.');
+                return $( this.settings.errorElement + "." + errorClass, this.errorContext );
+            },
+
+            reset: function() {
+                this.successList = [];
+                this.errorList = [];
+                this.errorMap = {};
+                this.toShow = $([]);
+                this.toHide = $([]);
+                this.currentElements = $([]);
+            },
+
+            prepareForm: function() {
+                this.reset();
+                this.toHide = this.errors().add( this.containers );
+            },
+
+            prepareElement: function( element ) {
+                this.reset();
+                this.toHide = this.errorsFor(element);
+            },
+
+            elementValue: function( element ) {
+                var type = $(element).attr('type'),
+                    val = $(element).val();
+
+                if ( type === 'radio' || type === 'checkbox' ) {
+                    return $('input[name="' + $(element).attr('name') + '"]:checked').val();
+                }
+
+                if ( typeof val === 'string' ) {
+                    return val.replace(/\r/g, "");
+                }
+                return val;
+            },
+
+            check: function( element ) {
+                element = this.validationTargetFor( this.clean( element ) );
+
+                var rules = $(element).rules();
+                var dependencyMismatch = false;
+                var val = this.elementValue(element);
+                var result;
+
+                for (var method in rules ) {
+                    var rule = { method: method, parameters: rules[method] };
+                    try {
+
+                        result = $.validator.methods[method].call( this, val, element, rule.parameters );
+
+                        // if a method indicates that the field is optional and therefore valid,
+                        // don't mark it as valid when there are no other rules
+                        if ( result === "dependency-mismatch" ) {
+                            dependencyMismatch = true;
+                            continue;
+                        }
+                        dependencyMismatch = false;
+
+                        if ( result === "pending" ) {
+                            this.toHide = this.toHide.not( this.errorsFor(element) );
+                            return;
+                        }
+
+                        if( !result ) {
+                            this.formatAndAdd( element, rule );
+                            return false;
+                        }
+                    } catch(e) {
+                        if ( this.settings.debug && window.console ) {
+                            console.log("exception occured when checking element " + element.id + ", check the '" + rule.method + "' method", e);
+                        }
+                        throw e;
+                    }
+                }
+                if (dependencyMismatch) {
+                    return;
+                }
+                if ( this.objectLength(rules) ) {
+                    this.successList.push(element);
+                }
+                return true;
+            },
+
+            // return the custom message for the given element and validation method
+            // specified in the element's "messages" metadata
+            customMetaMessage: function(element, method) {
+                if (!$.metadata) {
+                    return;
+                }
+                var meta = this.settings.meta ? $(element).metadata()[this.settings.meta] : $(element).metadata();
+                return meta && meta.messages && meta.messages[method];
+            },
+
+            // return the custom message for the given element and validation method
+            // specified in the element's HTML5 data attribute
+            customDataMessage: function(element, method) {
+                return $(element).data('msg-' + method.toLowerCase()) || (element.attributes && $(element).attr('data-msg-' + method.toLowerCase()));
+            },
+
+            // return the custom message for the given element name and validation method
+            customMessage: function( name, method ) {
+                var m = this.settings.messages[name];
+                return m && (m.constructor === String ? m : m[method]);
+            },
+
+            // return the first defined argument, allowing empty strings
+            findDefined: function() {
+                for(var i = 0; i < arguments.length; i++) {
+                    if (arguments[i] !== undefined) {
+                        return arguments[i];
+                    }
+                }
+                return undefined;
+            },
+
+            defaultMessage: function( element, method) {
+                return this.findDefined(
+                    this.customMessage( element.name, method ),
+                    this.customDataMessage( element, method ),
+                    this.customMetaMessage( element, method ),
+                    // title is never undefined, so handle empty string as undefined
+                    !this.settings.ignoreTitle && element.title || undefined,
+                    $.validator.messages[method],
+                    "<strong>Warning: No message defined for " + element.name + "</strong>"
+                );
+            },
+
+            formatAndAdd: function( element, rule ) {
+                var message = this.defaultMessage( element, rule.method ),
+                    theregex = /\$?\{(\d+)\}/g;
+                if ( typeof message === "function" ) {
+                    message = message.call(this, rule.parameters, element);
+                } else if (theregex.test(message)) {
+                    message = $.validator.format(message.replace(theregex, '{$1}'), rule.parameters);
+                }
+                this.errorList.push({
+                    message: message,
+                    element: element
+                });
+
+                this.errorMap[element.name] = message;
+                this.submitted[element.name] = message;
+            },
+
+            addWrapper: function(toToggle) {
+                if ( this.settings.wrapper ) {
+                    toToggle = toToggle.add( toToggle.parent( this.settings.wrapper ) );
+                }
+                return toToggle;
+            },
+
+            defaultShowErrors: function() {
+                var i, elements;
+                for ( i = 0; this.errorList[i]; i++ ) {
+                    var error = this.errorList[i];
+                    if ( this.settings.highlight ) {
+                        this.settings.highlight.call( this, error.element, this.settings.errorClass, this.settings.validClass );
+                    }
+                    this.showLabel( error.element, error.message );
+                }
+                if( this.errorList.length ) {
+                    this.toShow = this.toShow.add( this.containers );
+                }
+                if (this.settings.success) {
+                    for ( i = 0; this.successList[i]; i++ ) {
+                        this.showLabel( this.successList[i] );
+                    }
+                }
+                if (this.settings.unhighlight) {
+                    for ( i = 0, elements = this.validElements(); elements[i]; i++ ) {
+                        this.settings.unhighlight.call( this, elements[i], this.settings.errorClass, this.settings.validClass );
+                    }
+                }
+                this.toHide = this.toHide.not( this.toShow );
+                this.hideErrors();
+                this.addWrapper( this.toShow ).show();
+            },
+
+            validElements: function() {
+                return this.currentElements.not(this.invalidElements());
+            },
+
+            invalidElements: function() {
+                return $(this.errorList).map(function() {
+                    return this.element;
+                });
+            },
+
+            showLabel: function(element, message) {
+                var label = this.errorsFor( element );
+                if ( label.length ) {
+                    // refresh error/success class
+                    label.removeClass( this.settings.validClass ).addClass( this.settings.errorClass );
+
+                    // check if we have a generated label, replace the message then
+                    if ( label.attr("generated") ) {
+                        label.html(message);
+                    }
+                } else {
+                    // create label
+                    label = $("<" + this.settings.errorElement + "/>")
+                        .attr({"for":  this.idOrName(element), generated: true})
+                        .addClass(this.settings.errorClass)
+                        .html(message || "");
+                    if ( this.settings.wrapper ) {
+                        // make sure the element is visible, even in IE
+                        // actually showing the wrapped element is handled elsewhere
+                        label = label.hide().show().wrap("<" + this.settings.wrapper + "/>").parent();
+                    }
+                    if ( !this.labelContainer.append(label).length ) {
+                        if ( this.settings.errorPlacement ) {
+                            this.settings.errorPlacement(label, $(element) );
+                        } else {
+                            label.insertAfter(element);
+                        }
+                    }
+                }
+                if ( !message && this.settings.success ) {
+                    label.text("");
+                    if ( typeof this.settings.success === "string" ) {
+                        label.addClass( this.settings.success );
+                    } else {
+                        this.settings.success( label, element );
+                    }
+                }
+                this.toShow = this.toShow.add(label);
+            },
+
+            errorsFor: function(element) {
+                var name = this.idOrName(element);
+                return this.errors().filter(function() {
+                    return $(this).attr('for') === name;
+                });
+            },
+
+            idOrName: function(element) {
+                return this.groups[element.name] || (this.checkable(element) ? element.name : element.id || element.name);
+            },
+
+            validationTargetFor: function(element) {
+                // if radio/checkbox, validate first element in group instead
+                if (this.checkable(element)) {
+                    element = this.findByName( element.name ).not(this.settings.ignore)[0];
+                }
+                return element;
+            },
+
+            checkable: function( element ) {
+                return (/radio|checkbox/i).test(element.type);
+            },
+
+            findByName: function( name ) {
+                return $(this.currentForm).find('[name="' + name + '"]');
+            },
+
+            getLength: function(value, element) {
+                switch( element.nodeName.toLowerCase() ) {
+                    case 'select':
+                        return $("option:selected", element).length;
+                    case 'input':
+                        if( this.checkable( element) ) {
+                            return this.findByName(element.name).filter(':checked').length;
+                        }
+                }
+                return value.length;
+            },
+
+            depend: function(param, element) {
+                return this.dependTypes[typeof param] ? this.dependTypes[typeof param](param, element) : true;
+            },
+
+            dependTypes: {
+                "boolean": function(param, element) {
+                    return param;
+                },
+                "string": function(param, element) {
+                    return !!$(param, element.form).length;
+                },
+                "function": function(param, element) {
+                    return param(element);
+                }
+            },
+
+            optional: function(element) {
+                var val = this.elementValue(element);
+                return !$.validator.methods.required.call(this, val, element) && "dependency-mismatch";
+            },
+
+            startRequest: function(element) {
+                if (!this.pending[element.name]) {
+                    this.pendingRequest++;
+                    this.pending[element.name] = true;
+                }
+            },
+
+            stopRequest: function(element, valid) {
+                this.pendingRequest--;
+                // sometimes synchronization fails, make sure pendingRequest is never < 0
+                if (this.pendingRequest < 0) {
+                    this.pendingRequest = 0;
+                }
+                delete this.pending[element.name];
+                if ( valid && this.pendingRequest === 0 && this.formSubmitted && this.form() ) {
+                    $(this.currentForm).submit();
+                    this.formSubmitted = false;
+                } else if (!valid && this.pendingRequest === 0 && this.formSubmitted) {
+                    $(this.currentForm).triggerHandler("invalid-form", [this]);
+                    this.formSubmitted = false;
+                }
+            },
+
+            previousValue: function(element) {
+                return $.data(element, "previousValue") || $.data(element, "previousValue", {
+                    old: null,
+                    valid: true,
+                    message: this.defaultMessage( element, "remote" )
+                });
+            }
+
+        },
+
+        classRuleSettings: {
+            required: {required: true},
+            email: {email: true},
+            url: {url: true},
+            date: {date: true},
+            dateISO: {dateISO: true},
+            number: {number: true},
+            digits: {digits: true},
+            creditcard: {creditcard: true}
+        },
+
+        addClassRules: function(className, rules) {
+            if ( className.constructor === String ) {
+                this.classRuleSettings[className] = rules;
+            } else {
+                $.extend(this.classRuleSettings, className);
+            }
+        },
+
+        classRules: function(element) {
+            var rules = {};
+            var classes = $(element).attr('class');
+            if ( classes ) {
+                $.each(classes.split(' '), function() {
+                    if (this in $.validator.classRuleSettings) {
+                        $.extend(rules, $.validator.classRuleSettings[this]);
+                    }
+                });
+            }
+            return rules;
+        },
+
+        attributeRules: function(element) {
+            var rules = {};
+            var $element = $(element);
+
+            for (var method in $.validator.methods) {
+                var value;
+
+                // support for <input required> in both html5 and older browsers
+                if (method === 'required') {
+                    value = $element.get(0).getAttribute(method);
+                    // Some browsers return an empty string for the required attribute
+                    // and non-HTML5 browsers might have required="" markup
+                    if (value === "") {
+                        value = true;
+                    }
+                    // force non-HTML5 browsers to return bool
+                    value = !!value;
+                } else {
+                    value = $element.attr(method);
+                }
+
+                if (value) {
+                    rules[method] = value;
+                } else if ($element[0].getAttribute("type") === method) {
+                    rules[method] = true;
+                }
+            }
+
+            // maxlength may be returned as -1, 2147483647 (IE) and 524288 (safari) for text inputs
+            if (rules.maxlength && /-1|2147483647|524288/.test(rules.maxlength)) {
+                delete rules.maxlength;
+            }
+
+            return rules;
+        },
+
+        metadataRules: function(element) {
+            if (!$.metadata) {
+                return {};
+            }
+
+            var meta = $.data(element.form, 'validator').settings.meta;
+            return meta ?
+                $(element).metadata()[meta] :
+                $(element).metadata();
+        },
+
+        staticRules: function(element) {
+            var rules = {};
+            var validator = $.data(element.form, 'validator');
+            if (validator.settings.rules) {
+                rules = $.validator.normalizeRule(validator.settings.rules[element.name]) || {};
+            }
+            return rules;
+        },
+
+        normalizeRules: function(rules, element) {
+            // handle dependency check
+            $.each(rules, function(prop, val) {
+                // ignore rule when param is explicitly false, eg. required:false
+                if (val === false) {
+                    delete rules[prop];
+                    return;
+                }
+                if (val.param || val.depends) {
+                    var keepRule = true;
+                    switch (typeof val.depends) {
+                        case "string":
+                            keepRule = !!$(val.depends, element.form).length;
+                            break;
+                        case "function":
+                            keepRule = val.depends.call(element, element);
+                            break;
+                    }
+                    if (keepRule) {
+                        rules[prop] = val.param !== undefined ? val.param : true;
+                    } else {
+                        delete rules[prop];
+                    }
+                }
+            });
+
+            // evaluate parameters
+            $.each(rules, function(rule, parameter) {
+                rules[rule] = $.isFunction(parameter) ? parameter(element) : parameter;
+            });
+
+            // clean number parameters
+            $.each(['minlength', 'maxlength', 'min', 'max'], function() {
+                if (rules[this]) {
+                    rules[this] = Number(rules[this]);
+                }
+            });
+            $.each(['rangelength', 'range'], function() {
+                if (rules[this]) {
+                    rules[this] = [Number(rules[this][0]), Number(rules[this][1])];
+                }
+            });
+
+            if ($.validator.autoCreateRanges) {
+                // auto-create ranges
+                if (rules.min && rules.max) {
+                    rules.range = [rules.min, rules.max];
+                    delete rules.min;
+                    delete rules.max;
+                }
+                if (rules.minlength && rules.maxlength) {
+                    rules.rangelength = [rules.minlength, rules.maxlength];
+                    delete rules.minlength;
+                    delete rules.maxlength;
+                }
+            }
+
+            // To support custom messages in metadata ignore rule methods titled "messages"
+            if (rules.messages) {
+                delete rules.messages;
+            }
+
+            return rules;
+        },
+
+        // Converts a simple string to a {string: true} rule, e.g., "required" to {required:true}
+        normalizeRule: function(data) {
+            if( typeof data === "string" ) {
+                var transformed = {};
+                $.each(data.split(/\s/), function() {
+                    transformed[this] = true;
+                });
+                data = transformed;
+            }
+            return data;
+        },
+
+        // http://docs.jquery.com/Plugins/Validation/Validator/addMethod
+        addMethod: function(name, method, message) {
+            $.validator.methods[name] = method;
+            $.validator.messages[name] = message !== undefined ? message : $.validator.messages[name];
+            if (method.length < 3) {
+                $.validator.addClassRules(name, $.validator.normalizeRule(name));
+            }
+        },
+
+        methods: {
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/required
+            required: function(value, element, param) {
+                // check if dependency is met
+                if ( !this.depend(param, element) ) {
+                    return "dependency-mismatch";
+                }
+                if ( element.nodeName.toLowerCase() === "select" ) {
+                    // could be an array for select-multiple or a string, both are fine this way
+                    var val = $(element).val();
+                    return val && val.length > 0;
+                }
+                if ( this.checkable(element) ) {
+                    return this.getLength(value, element) > 0;
+                }
+                return $.trim(value).length > 0;
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/remote
+            remote: function(value, element, param) {
+                if ( this.optional(element) ) {
+                    return "dependency-mismatch";
+                }
+
+                var previous = this.previousValue(element);
+                if (!this.settings.messages[element.name] ) {
+                    this.settings.messages[element.name] = {};
+                }
+                previous.originalMessage = this.settings.messages[element.name].remote;
+                this.settings.messages[element.name].remote = previous.message;
+
+                param = typeof param === "string" && {url:param} || param;
+
+                if ( this.pending[element.name] ) {
+                    return "pending";
+                }
+                if ( previous.old === value ) {
+                    return previous.valid;
+                }
+
+                previous.old = value;
+                var validator = this;
+                this.startRequest(element);
+                var data = {};
+                data[element.name] = value;
+                $.ajax($.extend(true, {
+                    url: param,
+                    mode: "abort",
+                    port: "validate" + element.name,
+                    dataType: "json",
+                    data: data,
+                    success: function(response) {
+                        validator.settings.messages[element.name].remote = previous.originalMessage;
+                        var valid = response === true || response === "true";
+                        if ( valid ) {
+                            var submitted = validator.formSubmitted;
+                            validator.prepareElement(element);
+                            validator.formSubmitted = submitted;
+                            validator.successList.push(element);
+                            delete validator.invalid[element.name];
+                            validator.showErrors();
+                        } else {
+                            var errors = {};
+                            var message = response || validator.defaultMessage( element, "remote" );
+                            errors[element.name] = previous.message = $.isFunction(message) ? message(value) : message;
+                            validator.invalid[element.name] = true;
+                            validator.showErrors(errors);
+                        }
+                        previous.valid = valid;
+                        validator.stopRequest(element, valid);
+                    }
+                }, param));
+                return "pending";
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/minlength
+            minlength: function(value, element, param) {
+                var length = $.isArray( value ) ? value.length : this.getLength($.trim(value), element);
+                return this.optional(element) || length >= param;
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/maxlength
+            maxlength: function(value, element, param) {
+                var length = $.isArray( value ) ? value.length : this.getLength($.trim(value), element);
+                return this.optional(element) || length <= param;
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/rangelength
+            rangelength: function(value, element, param) {
+                var length = $.isArray( value ) ? value.length : this.getLength($.trim(value), element);
+                return this.optional(element) || ( length >= param[0] && length <= param[1] );
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/min
+            min: function( value, element, param ) {
+                return this.optional(element) || value >= param;
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/max
+            max: function( value, element, param ) {
+                return this.optional(element) || value <= param;
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/range
+            range: function( value, element, param ) {
+                return this.optional(element) || ( value >= param[0] && value <= param[1] );
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/email
+            email: function(value, element) {
+                // contributed by Scott Gonzalez: http://projects.scottsplayground.com/email_address_validation/
+                return this.optional(element) || /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i.test(value);
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/url
+            url: function(value, element) {
+                // contributed by Scott Gonzalez: http://projects.scottsplayground.com/iri/
+                return this.optional(element) || /^(https?|ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(value);
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/date
+            date: function(value, element) {
+                return this.optional(element) || !/Invalid|NaN/.test(new Date(value));
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/dateISO
+            dateISO: function(value, element) {
+                return this.optional(element) || /^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(value);
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/number
+            number: function(value, element) {
+                return this.optional(element) || /^-?(?:\d+|\d{1,3}(?:,\d{3})+)?(?:\.\d+)?$/.test(value);
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/digits
+            digits: function(value, element) {
+                return this.optional(element) || /^\d+$/.test(value);
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/creditcard
+            // based on http://en.wikipedia.org/wiki/Luhn
+            creditcard: function(value, element) {
+                if ( this.optional(element) ) {
+                    return "dependency-mismatch";
+                }
+                // accept only spaces, digits and dashes
+                if (/[^0-9 \-]+/.test(value)) {
+                    return false;
+                }
+                var nCheck = 0,
+                    nDigit = 0,
+                    bEven = false;
+
+                value = value.replace(/\D/g, "");
+
+                for (var n = value.length - 1; n >= 0; n--) {
+                    var cDigit = value.charAt(n);
+                    nDigit = parseInt(cDigit, 10);
+                    if (bEven) {
+                        if ((nDigit *= 2) > 9) {
+                            nDigit -= 9;
+                        }
+                    }
+                    nCheck += nDigit;
+                    bEven = !bEven;
+                }
+
+                return (nCheck % 10) === 0;
+            },
+
+            // http://docs.jquery.com/Plugins/Validation/Methods/equalTo
+            equalTo: function(value, element, param) {
+                // bind to the blur event of the target in order to revalidate whenever the target field is updatedAt
+                // TODO find a way to bind the event just once, avoiding the unbind-rebind overhead
+                var target = $(param);
+                if (this.settings.onfocusout) {
+                    target.unbind(".validate-equalTo").bind("blur.validate-equalTo", function() {
+                        $(element).valid();
+                    });
+                }
+                return value === target.val();
+            }
+
+        }
+
+    });
+
+// deprecated, use $.validator.format instead
+    $.format = $.validator.format;
+
+}(jQuery));
+
+// ajax mode: abort
+// usage: $.ajax({ mode: "abort"[, port: "uniqueport"]});
+// if mode:"abort" is used, the previous request on that port (port can be undefined) is aborted via XMLHttpRequest.abort()
+(function($) {
+    var pendingRequests = {};
+    // Use a prefilter if available (1.5+)
+    if ( $.ajaxPrefilter ) {
+        $.ajaxPrefilter(function(settings, _, xhr) {
+            var port = settings.port;
+            if (settings.mode === "abort") {
+                if ( pendingRequests[port] ) {
+                    pendingRequests[port].abort();
+                }
+                pendingRequests[port] = xhr;
+            }
+        });
+    } else {
+        // Proxy ajax
+        var ajax = $.ajax;
+        $.ajax = function(settings) {
+            var mode = ( "mode" in settings ? settings : $.ajaxSettings ).mode,
+                port = ( "port" in settings ? settings : $.ajaxSettings ).port;
+            if (mode === "abort") {
+                if ( pendingRequests[port] ) {
+                    pendingRequests[port].abort();
+                }
+                return (pendingRequests[port] = ajax.apply(this, arguments));
+            }
+            return ajax.apply(this, arguments);
+        };
+    }
+}(jQuery));
+
+// provides cross-browser focusin and focusout events
+// IE has native support, in other browsers, use event caputuring (neither bubbles)
+
+// provides delegate(type: String, delegate: Selector, handler: Callback) plugin for easier event delegation
+// handler is only called when $(event.target).is(delegate), in the scope of the jquery-object for event.target
+(function($) {
+    // only implement if not provided by jQuery core (since 1.4)
+    // TODO verify if jQuery 1.4's implementation is compatible with older jQuery special-event APIs
+    if (!jQuery.event.special.focusin && !jQuery.event.special.focusout && document.addEventListener) {
+        $.each({
+            focus: 'focusin',
+            blur: 'focusout'
+        }, function( original, fix ){
+            $.event.special[fix] = {
+                setup:function() {
+                    this.addEventListener( original, handler, true );
+                },
+                teardown:function() {
+                    this.removeEventListener( original, handler, true );
+                },
+                handler: function(e) {
+                    var args = arguments;
+                    args[0] = $.event.fix(e);
+                    args[0].type = fix;
+                    return $.event.handle.apply(this, args);
+                }
+            };
+            function handler(e) {
+                e = $.event.fix(e);
+                e.type = fix;
+                return $.event.handle.call(this, e);
+            }
+        });
+    }
+    $.extend($.fn, {
+        validateDelegate: function(delegate, type, handler) {
+            return this.bind(type, function(event) {
+                var target = $(event.target);
+                if (target.is(delegate)) {
+                    return handler.apply(target, arguments);
+                }
+            });
+        }
+    });
+}(jQuery));
+define("plugins/jquery.validate", function(){});
+
+define('use!plugins/jquery.validate', ['jquery'], function() {return typeof undefined !== "undefined" ? undefined : void 0;});
+
+define('app/modules/modals',["app/webide","use!backbone", "jquery", "jqueryui", "use!bootstrap", "use!plugins/jquery.validate"],
+
+function(webide, Backbone) {
 
 	// Create a new module
 	var Modals = webide.module(),
@@ -16026,7 +17482,7 @@ function(webide, Backbone, Files) {
 
         events: {
             "click #cancel": "cancel",
-            "click #submit": "submit"
+            "submit form": "submit"
         },
 
         serialize: function() {
@@ -16070,6 +17526,7 @@ function(webide, Backbone, Files) {
 
         submit: function() {
             this.$el.modal("hide");
+            event.preventDefault();
         },
 
         close: function(event) {
@@ -16090,7 +17547,7 @@ function(webide, Backbone, Files) {
             };
         },
 
-        submit: function() {
+        submit: function(event) {
             app.trigger("file:create", {
                 name: this.$el.find("#filename").val(),
                 type: this.$el.find("#filetype").val(),
@@ -16099,6 +17556,23 @@ function(webide, Backbone, Files) {
 
             //After creating new file hide modal
             this.$el.modal("hide");
+            event.preventDefault();
+        },
+
+        postRender: function(el) {
+            $('form', el).validate({
+                errorElement: "span",
+                errorClass: "help-inline",
+                highlight: function(label) {
+                    $(label).closest('.control-group').addClass('error').removeClass('success');
+                },
+                unhighlight: function(label) {
+                    $(label).closest('.control-group').removeClass('error');
+                },
+                success: function(label) {
+                    label.closest('.control-group').addClass('success');
+                }
+            });
         }
 	});
 
@@ -16112,7 +17586,7 @@ function(webide, Backbone, Files) {
             };
         },
 
-        submit: function() {
+        submit: function(event) {
             //Load file content using ajax + server side script
 
             var url = this.$el.find("#fileurl").val();
@@ -16127,17 +17601,29 @@ function(webide, Backbone, Files) {
 
             //After creating new file hide modal
             this.$el.modal("hide");
+            event.preventDefault();
+        },
+
+        postRender: function(el) {
+            $('form', el).validate({
+                errorElement: "span",
+                errorClass: "help-inline",
+                highlight: function(label) {
+                    $(label).closest('.control-group').addClass('error').removeClass('success');
+                },
+                unhighlight: function(label) {
+                    $(label).closest('.control-group').removeClass('error');
+                },
+                success: function(label) {
+                    label.closest('.control-group').addClass('success');
+                }
+            });
         }
 	});
 
     Modals.Views.RenameFile = Modals.Views.Modal.extend({
         id: "rename_file",
         template: "modals/rename",
-
-        events: {
-            "click #cancel": "cancel",
-            "click #submit": "submit"
-        },
 
         submit: function() {
             var model = app.project.get('files').getByCid(this.$el.find('#cid').val());
@@ -16149,6 +17635,23 @@ function(webide, Backbone, Files) {
             }
 
             this.$el.modal("hide");
+            event.preventDefault();
+        },
+
+        postRender: function(el) {
+            $('form', el).validate({
+                errorElement: "span",
+                errorClass: "help-inline",
+                highlight: function(label) {
+                    $(label).closest('.control-group').addClass('error').removeClass('success');
+                },
+                unhighlight: function(label) {
+                    $(label).closest('.control-group').removeClass('error');
+                },
+                success: function(label) {
+                    label.closest('.control-group').addClass('success');
+                }
+            });
         }
     });
 
@@ -16160,61 +17663,74 @@ function(webide, Backbone, Files) {
             var model = app.project.get('files').getByCid(this.$el.find('#cid').val());
 
             if(model) {
-                var currSelected = app.project.get('files').getSelected(model.get('type') );
-                if(currSelected) {
-                    currSelected.set("selected", false);
-                }
-
-//                app.trigger("file:select", {
-//                    file: selectedFile,
-//                    type: selectedFile.get("type")
-//                });
-
                 model.destroy();
             }
 
             //After creating new file hide modal
             this.$el.modal("hide");
+            event.preventDefault();
         }
     });
 
-    Modals.Views.HtmlConfig = Modals.Views.Modal.extend({
-        id: "html_config",
-        template: "modals/html_config",
+    Modals.Views.DeleteProject = Modals.Views.Modal.extend({
+        id: "delete_project",
+        template: "modals/delete_project",
 
-        initialize: function() {
-            this.setViews({
-                "#js_files": [new Modals.Views.List({type: "javascript"})],
-                "#css_files": [new Modals.Views.List({type: "css"})]
+        submit: function() {
+            this.$el.modal("hide");
+            app.project.destroy();
+            app.router.navigate("/", {
+                trigger: true
             });
+
+            event.preventDefault();
+        }
+    });
+
+    Modals.Views.Settings = Modals.Views.Modal.extend({
+        id: "settings",
+        template: "modals/settings",
+
+        events: {
+            "click #cancel": "cancel",
+            "submit form": "submit",
+            "click #delete": "delete_project"
         },
 
-        postRender: function(el) {
-            $("#settingsTab a", el).click(function (e) {
-                e.preventDefault();
-                $(this).tab('show');
-            });
+        serialize: function() {
+            return {
+                name: app.project.get("name"),
+                description: app.project.get("description")
+            };
         },
 
         submit: function() {
-            this.$el.find('.files ul').find('li').each(function(index, item) {
-                var view = app.project.get('files').getView(function(view) {
-                    return view.$el = item;
-                });
+            app.project.save({
+                name: this.$("#name").val(),
+                description: this.$("#description").val()
+            });
 
-                if(view) {
-                    var metaData = app.project.get('files').get('metaData').get(view.model.id);
+            this.$el.modal("hide");
+            event.preventDefault();
+        },
 
-                    if(metaData) {
-                        metaData.set('order' ,index);
-                        metaData.set('active', item.find('active').selected());
-                    } else {
-                        app.project.get('files').get('metaData').create({
-                            id: view.model.id,
-                            order: index,
-                            active: item.find('active').selected()
-                        });
-                    }
+        delete_project: function() {
+            this.$el.modal("hide");
+            $("#delete_project").modal('show');
+        },
+
+        postRender: function(el) {
+            $('form', el).validate({
+                errorElement: "span",
+                errorClass: "help-inline",
+                highlight: function(label) {
+                    $(label).closest('.control-group').addClass('error').removeClass('success');
+                },
+                unhighlight: function(label) {
+                    $(label).closest('.control-group').removeClass('error');
+                },
+                success: function(label) {
+                    label.closest('.control-group').addClass('success');
                 }
             });
         }
@@ -16373,7 +17889,7 @@ function(webide, Backbone, Files) {
     Backbone.Relational.eventQueue = new Backbone.BlockingQueue();
 
     /**
-     * Backbone.Store keeps track of all created (and destruction of) Backbone.RelationalModel.
+     * Backbone.Store keeps track of all createdAt (and destruction of) Backbone.RelationalModel.
      * Handles lookup for relations.
      */
     Backbone.Store = function() {
@@ -16690,7 +18206,7 @@ function(webide, Backbone, Files) {
             Backbone.Relational.store.getCollection( this.instance )
                 .bind( 'relational:remove', this._modelRemovedFromCollection );
 
-            // When 'relatedModel' are created or destroyed, check if it affects this relation.
+            // When 'relatedModel' are createdAt or destroyed, check if it affects this relation.
             Backbone.Relational.store.getCollection( this.relatedModel )
                 .bind( 'relational:add', this._relatedModelAdded )
                 .bind( 'relational:remove', this._relatedModelRemoved );
@@ -16948,13 +18464,13 @@ function(webide, Backbone, Files) {
             }
 
             // Notify new 'related' object of the new relation. Note we do re-apply even if this.related is oldRelated;
-            // that can be necessary for bi-directional relations if 'this.instance' was created after 'this.related'.
+            // that can be necessary for bi-directional relations if 'this.instance' was createdAt after 'this.related'.
             // In that case, 'this.instance' will already know 'this.related', but the reverse might not exist yet.
             _.each( this.getReverseRelations(), function( relation ) {
                 relation.addRelated( this.instance, options );
             }, this);
 
-            // Fire the 'update:<key>' event if 'related' was updated
+            // Fire the 'update:<key>' event if 'related' was updatedAt
             if ( !options.silentChange && this.related !== oldRelated ) {
                 var dit = this;
                 Backbone.Relational.eventQueue.add( function() {
@@ -17026,7 +18542,7 @@ function(webide, Backbone, Files) {
                 throw new Error( 'collectionType must inherit from Backbone.Collection' );
             }
 
-            // Handle cases where a model/relation is created with a collection passed straight into 'attributes'
+            // Handle cases where a model/relation is createdAt with a collection passed straight into 'attributes'
             if ( this.keyContents instanceof Backbone.Collection ) {
                 this.setRelated( this._prepareCollection( this.keyContents ) );
             }
@@ -17045,7 +18561,7 @@ function(webide, Backbone, Files) {
 
         /**
          * Bind events and setup collectionKeys for a collection that is to be used as the backing store for a HasMany.
-         * If no 'collection' is supplied, a new collection will be created of the specified 'collectionType' option.
+         * If no 'collection' is supplied, a new collection will be createdAt of the specified 'collectionType' option.
          * @param {Backbone.Collection} [collection]
          */
         _prepareCollection: function( collection ) {
@@ -17393,7 +18909,7 @@ function(webide, Backbone, Files) {
             },
 
             /**
-             * Get all of the created relations.
+             * Get all of the createdAt relations.
              * @return {Backbone.Relation[]}
              */
             getRelations: function() {
@@ -17544,7 +19060,7 @@ function(webide, Backbone, Files) {
             },
 
             /**
-             * Override 'change', so the change will only execute after 'set' has finised (relations are updated),
+             * Override 'change', so the change will only execute after 'set' has finised (relations are updatedAt),
              * and 'previousAttributes' will be available when the event is fired.
              */
             change: function( options ) {
@@ -17749,8 +19265,8 @@ function(webide, Backbone, Files) {
             /**
              * Find an instance of `this` type in 'Backbone.Relational.store'.
              * - If `attributes` is a string or a number, `findOrCreate` will just query the `store` and return a model if found.
-             * - If `attributes` is an object, the model will be updated with `attributes` if found.
-             *   Otherwise, a new model is created with `attributes` (unless `options.create` is explicitly set to `false`).
+             * - If `attributes` is an object, the model will be updatedAt with `attributes` if found.
+             *   Otherwise, a new model is createdAt with `attributes` (unless `options.create` is explicitly set to `false`).
              * @param {Object|String|Number} attributes Either a model's id, or the attributes used to create or update a model.
              * @param {Object} [options]
              * @param {Boolean} [options.create=true]
@@ -18076,7 +19592,7 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
             defaults:{
                 active:true,
                 selected:false,
-                resource:false,
+                resource:"",
                 project: null,
                 order: 0,
                 type:'html',
@@ -18111,7 +19627,7 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
             },
 
             isResource: function() {
-                return this.get("resource") === null;
+                return this.get("resource") === "";
             },
 
             nextOrder: function() {
@@ -18124,7 +19640,67 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
             model: Files.Model,
 
             initialize: function() {
-                var that = this;
+                app.on("file:create", function(args) {
+                    if (!app.project.get("files").any(function(file) {
+                        return (file.get('name') === args.name) && (file.get('type') === args.type);
+                    })) {
+                        args.project = app.project;
+                        args.selected = true;
+
+                        var selected = app.project.get("files").getSelected(args.type);
+                        if(selected) {
+                            selected.set("selected", false);
+                        }
+
+                        var newfile = app.project.get("files").add(new Files.Model(args));
+
+                        app.trigger("file:select", {
+                            file: newfile,
+                            type: newfile.get("type")
+                        });
+
+                    } else {
+                        app.trigger("application:notify", {
+                            text: "A file already exists with that name",
+                            type: "error"
+                        });
+                    }
+                });
+                app.on("file:import", function(args) {
+                    if (!app.project.get("files").any(function(file) {
+                        return (file.get('name') === args.name) && (file.get('type') === args.type);
+                    })) {
+                        //Load file
+                        $.getJSON('/resource/' + encodeURI(args.url)).success(function(data) {
+                            args.project = app.project;
+                            args.resource = args.url;
+                            args.content = data.content;
+                            args.selected = true;
+
+                            var selected = app.project.get("files").getSelected(args.type);
+                            if(selected) {
+                                selected.set("selected", false);
+                            }
+
+                            var newfile = app.project.get("files").add(new Files.Model(args));
+
+                            app.trigger("file:select", {
+                                file: newfile,
+                                type: newfile.get("type")
+                            });
+                        }).error(function(data) {
+                                app.trigger("application:notify", {
+                                    message: data.message,
+                                    type: "error"
+                                });
+                            });
+                    } else {
+                        app.trigger("application:notify", {
+                            text: "A file already exists with that name",
+                            type: "error"
+                        });
+                    }
+                });
             },
 
             ofType: function (type, callback) {
@@ -18165,9 +19741,8 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
             tagName: "ul",
 
             initialize: function() {
-                app.project.on("add:files remove:files", function() {
-                    this.render();
-                }, this);
+                app.on("file:select", this.render, this);
+                app.project.on("add:files remove:files", this.render, this);
             },
 
             render: function(manage) {
@@ -18228,10 +19803,7 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
             },
 
             initialize: function() {
-                this.$el.addClass("file_" + this.model.get("type"));
-                this.model.on("change", function() {
-                    this.render();
-                }, this);
+                this.model.on("change:name", this.render, this);
                 this.model.on("remove", this.remove, this);
             },
 
@@ -18276,6 +19848,8 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
             render: function(manage) {
                 var that = this;
                 return manage(this).render().then(function(el) {
+                    $(el).addClass("file_" + this.model.get("type"));
+
                     var files = $(el).find('a').each(function(index, element) {
                         $(element).contextPopup({
                             items: [
@@ -18322,6 +19896,7 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
                 var view = manage(this),
                     that = this,
                     collection = app.project.get('files'),
+                    files = collection.ofType(that.type),
                     callback = function(file) {
                         if(!file.get("active")) {
                             return;
@@ -18335,10 +19910,18 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
                 this.views = {};
 
 //                //Add each file to the tabs
-                collection.ofType(that.type, callback);
+                _.each(files, callback);
+                if(files.length > 0) {
+                    this.insertView(new Files.Views.EndTabItem());
+                }
 
                 return view.render();
             }
+        });
+
+        Files.Views.EndTabItem = Backbone.View.extend({
+            tagName: "li",
+            className: "end_file_tab"
         });
 
         Files.Views.TabItem = Backbone.View.extend({
@@ -18352,7 +19935,7 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
             },
 
             initialize: function() {
-                this.model.on("change", this.render, this);
+                this.model.on("change:name", this.render, this);
                 this.model.on("remove", this.remove, this);
             },
 
@@ -18406,7 +19989,7 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
     });
 define('app/modules/project',["app/webide", "use!backbone", "app/modules/files", "app/modules/versions", "use!plugins/backbone.relational"],
 
-    function (webide, Backbone, Files, Versions) {
+    function (webide, Backbone, Files, Versions, Offline) {
 
         // Create a new module
         var Project = webide.module(),
@@ -18414,51 +19997,86 @@ define('app/modules/project',["app/webide", "use!backbone", "app/modules/files",
 
         Project.Model = Backbone.RelationalModel.extend({
             defaults:{
-                id: null,
-                hash: "",
-                created: new Date(),
-                updated: new Date()
+                id:null,
+                name:"",
+                description:"",
+                hash:""
             },
 
-            relations: [{
-                type: Backbone.HasMany,
-                key: 'files',
-                relatedModel: Files.Model,
-                collectionType: Files.Collection,
-                reverseRelation: {
-                    key: 'project',
-                    includeInJSON: 'id'
+            relations:[
+                {
+                    type:Backbone.HasMany,
+                    key:'files',
+                    relatedModel:Files.Model,
+                    collectionType:Files.Collection,
+                    reverseRelation:{
+                        key:'project',
+                        includeInJSON:'id'
+                    }
+                },
+                {
+                    type:Backbone.HasMany,
+                    key:'versions',
+                    relatedModel:Versions.Model,
+                    collectionType:Versions.Collection,
+                    reverseRelation:{
+                        key:'project',
+                        includeInJSON:'id'
+                    }
                 }
-            },
-            {
-                type: Backbone.HasOne,
-                key: 'version',
-                relatedModel: Versions.Model
-            },
-            {
-                type: Backbone.HasMany,
-                key: 'versions',
-                relatedModel: Versions.Model,
-                collectionType: Versions.Collection,
-                reverseRelation: {
-                    key: 'project',
-                    includeInJSON: 'id'
-                }
-            }],
+            ],
 
-            urlRoot: globals.baseUrl + '/projects'
+            urlRoot:globals.baseUrl + '/projects',
+
+            initialize: function() {
+                var that = this;
+
+                app.on("save", function() {
+                    that.save().success(function() {
+                        if (that.has('current_version')) {
+                            app.router.navigate('/' + that.id + '/' + that.get('current_version'));
+                        }
+
+                        app.trigger("reload");
+                    });
+                });
+                app.on("new_version", function() {
+                    var  id = that.id;
+                    that.fetch({
+                        url: globals.baseUrl + '/projects/' + id + '/version',
+                        error: function(resp) {
+                            if (resp.status === 404) {
+                                app.trigger("application:notify", {
+                                    text: "That project could not be found",
+                                    type: "error",
+                                    layout: "top"
+                                });
+                                app.router.navigate('/', {
+                                    trigger: true
+                                });
+                            }
+                        },
+                        success: function(resp) {
+                            var version = that.get('current_version');
+                            app.router.navigate('/' + id + '/' + version, {
+                                trigger: true
+                            });
+                        }
+                    });
+                });
+            }
         });
 
         Project.RecentProjects = Backbone.Collection.extend({
-            model: Project.Model,
-            url: globals.baseUrl + '/projects/recent'
+            model:Project.Model,
+            url:globals.baseUrl + '/projects/recent'
         });
 
         return Project;
     });
-define('app/modules/app',["app/webide","use!backbone", "app/modules/project", "app/modules/files"],
+define('app/modules/app',["app/webide","use!backbone", "app/modules/project", "app/modules/files", "use!keymaster"],
 
-function (webide, Backbone, Project, Files) {
+function (webide, Backbone, Project, Files, key) {
     // Create a new module
     var App = webide.module(),
         app = webide.app;
@@ -18555,6 +20173,7 @@ define('app/modules/header',["app/webide","use!backbone","app/modules/modals","a
                 "click .run": "run",
                 "click .save": "save",
                 "click .new_version": "new_version",
+                "click .settings": "settings",
                 "click .download": "download"
             },
 
@@ -18566,13 +20185,13 @@ define('app/modules/header',["app/webide","use!backbone","app/modules/modals","a
 
             serialize: function() {
                 return {
+                    read_only: app.project.get('read_only'),
                     project: app.project.toJSON(),
                     versions: app.project.get("versions").toJSON()
                 };
             },
 
             switch_project: function() {
-                app.project.save();
                 app.router.navigate('/', {
                     trigger: true
                 });
@@ -18584,35 +20203,13 @@ define('app/modules/header',["app/webide","use!backbone","app/modules/modals","a
                 $("#import_file").modal('show');
             },
             run: function() {
-                app.trigger("app:run");
+                app.trigger("run");
             },
             save: function() {
-                app.project.save().success(function() {
-                    app.trigger("app:save");
-                    app.trigger("app:reload");
-                });
+                app.trigger("save");
             },
             new_version: function() {
-                var  id = app.project.id;
-                app.project.fetch({
-                    url: globals.baseUrl + '/projects/' + id + '/version'
-                }).error(function(resp) {
-                    if (resp.status === 404) {
-                        app.trigger("application:notify", {
-                            text: "That project could not be found",
-                            type: "error",
-                            layout: "top"
-                        });
-                        app.router.navigate('/', {
-                            trigger: true
-                        });
-                    }
-                }).success(function(resp) {
-                    var version = app.project.get('version').get('version_number');
-                    app.router.navigate('/' + id + '/' + version, {
-                        trigger: true
-                   });
-                });
+                app.trigger("new_version");
             },
             download: function() {
                 app.trigger("application:notify", {
@@ -18622,6 +20219,10 @@ define('app/modules/header',["app/webide","use!backbone","app/modules/modals","a
                 });
                 //TODO: Fix
 //                app.router.navigate("projects/" + webide.app.project.id + "/download", {trigger: false});
+            },
+
+            settings: function() {
+                $("#settings").modal('show');
             },
 
             render: function(manage) {
@@ -19105,7 +20706,7 @@ var CodeMirror = (function() {
         // local functions in the CodeMirror function. Some do some extra
         // range checking and/or clipping. operation is used to wrap the
         // call so that changes it makes are tracked, and the display is
-        // updated afterwards.
+        // updatedAt afterwards.
         var instance = wrapper.CodeMirror = {
             getValue: getValue,
             setValue: operation(setValue),
@@ -23065,7 +24666,7 @@ CodeMirror.modeExtensions["htmlmixed"] = {
         CodeMirror.connect(sel, "dblclick", pick);
 
         sel.focus();
-        // Opera sometimes ignores focusing a freshly created node
+        // Opera sometimes ignores focusing a freshly createdAt node
         if (window.opera) setTimeout(function(){if (!done) sel.focus();}, 100);
         return true;
     };
@@ -24063,9 +25664,9 @@ define("cm_html", function(){});
 
 define('use!cm_html', ['use!codemirror','use!cm_xml','use!cm_css','use!cm_js'], function() {return typeof undefined !== "undefined" ? undefined : void 0;});
 
-define('app/modules/editor',["app/webide", "use!backbone", "app/modules/files", "app/modules/modals", "use!codemirror", "use!cm_xml", "use!cm_html", "use!cm_css", "use!cm_js", "jqueryui"],
+define('app/modules/editor',["app/webide", "use!backbone", "app/modules/files", "app/modules/modals", "use!keymaster", "use!codemirror", "use!cm_xml", "use!cm_html", "use!cm_css", "use!cm_js", "jqueryui"],
 
-    function(webide, Backbone, Files, Modals, CodeMirror) {
+    function(webide, Backbone, Files, Modals, key, CodeMirror) {
         
 
         // Create a new module
@@ -24119,7 +25720,7 @@ define('app/modules/editor',["app/webide", "use!backbone", "app/modules/files", 
                         onChange: function(cm, event) {
                             that.model.set("content", cm.getValue());
 
-                            app.trigger("app:reload");
+                            app.trigger("reload");
                         },
                         onGutterClick: foldFunc,
                         extraKeys: {
@@ -24279,8 +25880,8 @@ define('app/modules/editor',["app/webide", "use!backbone", "app/modules/files", 
 
                 //Setup events
                 app.on("editor:update", this.update_panels, this);
-                app.on("app:reload", this.reload, this);
-                app.on("app:run", this.run, this);
+                app.on("reload", this.reload, this);
+                app.on("run", this.run, this);
                 app.on("editor:fullscreen", this.fullscreen, this);
                 app.on("editor:fullscreen:exit", this.exit_fullscreen, this);
 
@@ -24424,11 +26025,12 @@ function(webide, Backbone) {
         keep: true,
 
         initialize: function() {
-            app.on("app:save", this.render, this);
+            app.on("save", this.render, this);
         },
 
         render: function(manage) {
             return manage(this).render().then(function(el) {
+                console.log("timeago");
                 $('time.timeago', el).timeago();
             });
         }
@@ -24691,6 +26293,7 @@ require.config({
         codemirror: "vendors/codemirror",
         jqueryui: "vendors/jqueryui",
         moment: "vendors/moment",
+        keymaster: "vendors/keymaster",
 
         // Modes
         cm_html: "vendors/cm_modes/html/html",
@@ -24710,7 +26313,7 @@ require.config({
             deps: ["use!underscore", "use!handlebars", "jquery"],
             attach: "Backbone"
         },
-        "plugins/jquery.easing": {
+        "plugins/jquery.validate": {
             deps: ["jquery"]
         },
         "plugins/jquery.ui.position": {
@@ -24728,8 +26331,9 @@ require.config({
         "plugins/backbone.layoutmanager": {
             deps: ["use!backbone"]
         },
-        "plugins/backbone.localstorage": {
-            deps: ["use!backbone"]
+        "plugins/backbone.offline": {
+            deps: ["use!backbone"],
+            attach: "Offline"
         },
         "plugins/backbone.relational": {
             deps: ["use!backbone"]
@@ -24745,6 +26349,9 @@ require.config({
         },
         codemirror: {
             attach: "CodeMirror"
+        },
+        keymaster: {
+            attach: "key"
         },
 
         /** CodeMirror Modes **/
@@ -24774,7 +26381,7 @@ require.config({
 require(["app/webide",
 
 // Libs
-"jquery", "use!backbone", "use!underscore",
+"jquery", "use!backbone", "use!underscore", "use!keymaster",
 
 // Modules
 "app/modules/app", "app/modules/header", "app/modules/sidebar", "app/modules/editor", "app/modules/footer", "app/modules/files", "app/modules/project", "app/modules/modals",
@@ -24782,7 +26389,7 @@ require(["app/webide",
 // Plugins
 "use!plugins/jquery.noty"],
 
-function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Project, Modals) {
+function(webide, $, Backbone, _, key, App, Header, Sidebar, Editor, Footer, Files, Project, Modals) {
     // Shorthand the application namespace
     window.webide = webide;
     var app = webide.app;
@@ -24838,12 +26445,10 @@ function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Pr
                 }
                 if (xhr.status === 403) {
                     app.trigger("application:notify", {
-                        text: "You are not allowed to view this page",
+                        text: "You are not allowed to do that",
                         type: "error",
                         layout: "top",
-                        closeOnSelfClick: false,
-                        timeout: false,
-                        modal: true,
+                        closeOnSelfClick: true,
                         buttons: [{
                             text: 'Return to homepage',
                             type: "btn",
@@ -24857,75 +26462,28 @@ function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Pr
                         }]
                     });
                 }
-            });
-
-            app.on("app:save", function() {
-                if (app.project.has('current_version')) {
-                    app.router.navigate('/' + app.project.id + '/' + app.project.get('current_version'));
-                }
-            });
-
-            app.on("file:create", function(args) {
-                if (!app.project.get("files").any(function(file) {
-                    return (file.get('name') === args.name) && (file.get('type') === args.type);
-                })) {
-                    args.project = app.project;
-                    args.selected = true;
-
-                   var currSelected = app.project.get('files').getSelected(args.type);
-                   if(currSelected) {
-                        currSelected.set("selected", false);
-                   }
-
-                   // args.selected = true;
-                    var newfile = app.project.get("files").create(args);
-
-                    app.trigger("file:select", {
-                        file: newfile,
-                        type: newfile.get("type")
-                    });
-
-                } else {
+                if (xhr.status === 400) {
                     app.trigger("application:notify", {
-                        text: "A file already exists with that name",
-                        type: "error"
+                        text: "That data is invalid",
+                        type: "error",
+                        layout: "top",
+                        closeOnSelfClick: true
                     });
                 }
             });
-            app.on("file:import", function(args) {
-                if (!app.project.get("files").any(function(file) {
-                    return (file.get('name') === args.name) && (file.get('type') === args.type);
-                })) {
-                    //Load file
-                    $.getJSON('/resource/' + encodeURI(args.url)).success(function(data) {
-                        args.project = app.project;
-                        args.resource = args.url;
-                        args.content = data.content;
 
-                        var newfile = app.project.get("files").create(args);
-
-                        app.project.get('files').map(function(file) {
-                            if (file.get("type") === newfile.get("type") && file !== newfile) {
-                                file.set("selected", false);
-                            }
-                        });
-
-                        app.trigger("file:select", {
-                            file: newfile,
-                            type: newfile.get("type")
-                        });
-                    }).error(function(data) {
-                        app.trigger("application:notify", {
-                            message: data.message,
-                            type: "error"
-                        });
-                    });
-                } else {
-                    app.trigger("application:notify", {
-                        text: "A file already exists with that name",
-                        type: "error"
-                    });
-                }
+//            key.filter(function() { return true; });
+            key.filter = function(event) { return true; };
+            key('control+enter', 'editor', function(event) { app.trigger("run"); return false; });
+            key('alt+enter', 'editor', function(event) { app.trigger("reload"); return false; });
+            key('control+s', 'editor', function(event) { app.trigger("save"); return false; });
+            key('control+alt+n', 'editor', function(event) { $("#new_file").modal('show'); return false; });
+            key('control+alt+i', 'editor', function(event) { $("#import_file").modal('show'); return false; });
+            key('control+alt+o', 'editor', function(event) {
+                app.router.navigate('/', {
+                    trigger: true
+                });
+                return false;
             });
         },
 
@@ -24939,6 +26497,8 @@ function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Pr
         },
 
         view: function(id) {
+            key.setScope('editor');
+
             app.project.set({
                 id: id
             });
@@ -24949,27 +26509,31 @@ function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Pr
                 "#sidebar": new Sidebar.Views.Main(),
                 "#workspace": new Editor.Views.Main(),
                 "#footer": new Footer.Views.Main(),
-                "#modals": [new Modals.Views.NewFile(), new Modals.Views.ImportFile(), new Modals.Views.RenameFile(), new Modals.Views.DeleteFile(), new Modals.Views.HtmlConfig()]
+                "#modals": [new Modals.Views.NewFile(), new Modals.Views.ImportFile(), new Modals.Views.RenameFile(), new Modals.Views.DeleteFile(), new Modals.Views.DeleteProject(), new Modals.Views.Settings()]
             });
 
             $("#container").html(layout.el);
             layout.render();
 
-            app.project.fetch().error(function(resp) {
-                if (resp.status === 404) {
-                    app.trigger("application:notify", {
-                        text: "That project could not be found",
-                        type: "error",
-                        layout: "top"
-                    });
-                    app.router.navigate('/', {
-                        trigger: true
-                    });
+            app.project.fetch({
+                error: function(resp) {
+                    if (resp.status === 404) {
+                        app.trigger("application:notify", {
+                            text: "That project could not be found",
+                            type: "error",
+                            layout: "top"
+                        });
+                        app.router.navigate('/', {
+                            trigger: true
+                        });
+                    }
                 }
             });
         },
 
         viewVersion: function(id, version) {
+            key.setScope('editor');
+
             app.project.set({
                 id: id,
                 current_version: version
@@ -24981,7 +26545,7 @@ function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Pr
                 "#sidebar": new Sidebar.Views.Main(),
                 "#workspace": new Editor.Views.Main(),
                 "#footer": new Footer.Views.Main(),
-                "#modals": [new Modals.Views.NewFile(), new Modals.Views.ImportFile(), new Modals.Views.RenameFile(), new Modals.Views.DeleteFile(), new Modals.Views.HtmlConfig()]
+                "#modals": [new Modals.Views.NewFile(), new Modals.Views.ImportFile(), new Modals.Views.RenameFile(), new Modals.Views.DeleteFile(), new Modals.Views.DeleteProject(), new Modals.Views.Settings()]
             });
             $("#container").html(layout.el);
             layout.render().then(function() {
@@ -24990,17 +26554,18 @@ function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Pr
             });
 
             app.project.fetch({
-                url: globals.baseUrl + '/projects/' + id + '/' + version
-            }).error(function(resp) {
-                if (resp.status === 404) {
-                    app.trigger("application:notify", {
-                        text: "That project could not be found",
-                        type: "error",
-                        layout: "top"
-                    });
-                    app.router.navigate('/', {
-                        trigger: true
-                    });
+                url: globals.baseUrl + '/projects/' + id + '/' + version,
+                error: function(resp) {
+                    if (resp.status === 404) {
+                        app.trigger("application:notify", {
+                            text: "That project could not be found",
+                            type: "error",
+                            layout: "top"
+                        });
+                        app.router.navigate('/', {
+                            trigger: true
+                        });
+                    }
                 }
             });
         },

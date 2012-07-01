@@ -9,12 +9,19 @@ define(["jquery", "use!handlebars", "use!moment", "use!plugins/jquery.timeago"],
             return new Date();
         });
         Handlebars.registerHelper('dateFormat', function(context, block) {
-            if (moment) {
-                var f = block.hash.format || "MMM Mo, YYYY";
-                return moment(context || new Date()).format(f);
-            }else{
-                return context;
+            var format;
+
+            if(!(context instanceof Date)) {
+                context = new Date();
             }
+            if(block) {
+                if(typeof block.hash !== "undefined" && typeof block.hash.format !== "undefined") {
+                    format = block.hash.format;
+                } else {
+                    format = "MMM Mo, YYYY";
+                }
+            }
+            return moment(context).format(format);
         });
         Handlebars.registerHelper('url', function(url) {
             return globals.baseUrl + url;

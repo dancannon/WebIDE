@@ -1,6 +1,6 @@
-define(["app/webide","use!backbone", "app/modules/project", "app/modules/files"],
+define(["app/webide","use!backbone", "app/modules/project", "app/modules/files", "use!keymaster"],
 
-function (webide, Backbone, Project, Files) {
+function (webide, Backbone, Project, Files, key) {
     // Create a new module
     var App = webide.module(),
         app = webide.app;

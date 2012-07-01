@@ -2,6 +2,8 @@
 namespace WebIDE\SiteBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use WebIDE\SiteBundle\Entity\ProjectVersion;
+use WebIDE\SiteBundle\Entity\Project;
 use WebIDE\SiteBundle\Entity\OwnableEntity;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use WebIDE\SiteBundle\Entity\File;
@@ -13,8 +15,6 @@ class FileController extends Controller
 {
     public function getFilesAction()
     {
-        $this->checkPermission();
-
         $em = $this->getDoctrine();
         $files = $em->getRepository("WebIDESiteBundle:File")->findAll();
 
@@ -29,8 +29,6 @@ class FileController extends Controller
     {
         $em = $this->getDoctrine();
         $file = $em->getRepository("WebIDESiteBundle:File")->find($id);
-
-        $this->checkPermission($file);
 
         $view = View::create()
             ->setStatusCode(200)
@@ -54,32 +52,26 @@ class FileController extends Controller
         $projectRData = $request->get('project');
         $projectId = is_array($projectRData) ? $projectRData['id'] : $projectRData;
 
-        $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
-        $query->setParameter("id", $projectId);
-
-        $project = $query->getResult();
-
-        if (!$project || !isset($project[0])) {
+        try {
+            $version = $this->getDoctrine()->getRepository('WebIDESiteBundle:ProjectVersion')->findVersionByProject($projectId);
+            $project = $this->getDoctrine()->getRepository('WebIDESiteBundle:Project')->findProject($projectId, $version);
+            $project->setReadOnly($this->get('security.context')->getToken()->getUser() !== $project->getUser());
+        } catch (\Doctrine\Orm\NonUniqueResultException $e) {
+            throw $this->createNotFoundException('Project not found.');
+        } catch (\Doctrine\Orm\NoResultException $e) {
             throw $this->createNotFoundException('Project not found.');
         }
 
-        $project = $project[0];
+        $this->checkPermission($project);
 
-        $this->checkPermission($file);
+        $file = $this->bindFileData($file, $project, $version, $request->request->all());
 
-        $file->setActive($request->get('active'));
-        $file->setSelected($request->get('selected'));
-        $file->setResource($request->get('resource'));
-        $file->setOrder($request->get('order'));
-        $file->setType($request->get('type'));
-        $file->setName($request->get('name'));
-        $file->setContent($request->get('content'));
-        $file->setProject($project);
-        $file->setVersion($project->getVersion());
-        $file->setUser($this->get('security.context')->getToken()->getUser());
+        $validator = $this->get('validator');
+        $errors = $validator->validate($file);
 
-        //TODO: Add validation
+        if (count($errors) > 0) {
+            throw new HttpException(400, "Invalid Request");
+        }
 
         $em->persist($file);
         $em->flush();
@@ -101,39 +93,33 @@ class FileController extends Controller
         $request = $this->getRequest();
 
         $file = $this->getDoctrine()->getRepository("WebIDESiteBundle:File")->findOneBy(array('id' => $id));
-
         if (!$file) {
             throw $this->createNotFoundException('File not found.');
         }
 
         //Find project
         $projectId = is_object($request->get('project')) ? $request->get('project')->id : $request->get('project');
-        $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f LEFT JOIN p.version pv LEFT JOIN f.version fv WITH fv.id = pv WHERE p.id = :id ");
-        $query->setParameter("id", $projectId);
-
-        $project = $query->getResult();
-
-        if (!$project || !isset($project[0])) {
+        try {
+            $version = $this->getDoctrine()->getRepository('WebIDESiteBundle:ProjectVersion')->findVersionByProject($projectId);
+            $project = $this->getDoctrine()->getRepository('WebIDESiteBundle:Project')->findProject($projectId, $version);
+            $project->setReadOnly($this->get('security.context')->getToken()->getUser() !== $project->getUser());
+        } catch (\Doctrine\Orm\NonUniqueResultException $e) {
+            throw $this->createNotFoundException('Project not found.');
+        } catch (\Doctrine\Orm\NoResultException $e) {
             throw $this->createNotFoundException('Project not found.');
         }
-
-        $project = $project[0];
-
+        $this->checkPermission($project);
         $this->checkPermission($file);
 
-        $file->setActive($request->get('active'));
-        $file->setSelected($request->get('selected'));
-        $file->setResource($request->get('resource'));
-        $file->setOrder($request->get('order'));
-        $file->setType($request->get('type'));
-        $file->setName($request->get('name'));
-        $file->setContent($request->get('content'));
-        $file->setProject($project);
-        $file->setVersion($project->getVersion());
-        $file->setUser($this->get('security.context')->getToken()->getUser());
+        $file = $this->bindFileData($file, $project, $version, $request->request->all());
 
-        //TODO: Add validation
+        $validator = $this->get('validator');
+        $errors = $validator->validate($file);
+
+        if (count($errors) > 0) {
+            throw new HttpException(400, "Invalid Request");
+        }
+
 
         $em->persist($file);
         $em->flush();
@@ -174,18 +160,36 @@ class FileController extends Controller
     protected function checkPermission(OwnableEntity $entity=null)
     {
         if($entity !== null) {
-            if($this->get('security.context')->isGranted('ROLE_USER') || $this->get('security.context')->getToken()->getUser() !== $entity->getUser()) {
-                return true;
-            } else {
-                die("test");
+            if(!$this->get('security.context')->isGranted('ROLE_USER')) {
+                throw new HttpException(401, "Unauthorized");
+            }
+            if($this->get('security.context')->getToken()->getUser() !== $entity->getUser()) {
                 throw new HttpException(403, "Unauthorized");
             }
+
+            return true;
         } else {
-            if($this->get('security.context')->isGranted('ROLE_USER')) {
-                throw new HttpException(403, "Unauthorized");
-            } else {
-                return true;
+            if(!$this->get('security.context')->isGranted('ROLE_USER')) {
+                throw new HttpException(401, "Unauthorized");
             }
+
+            return true;
         }
+    }
+
+    protected function bindFileData(File $file, Project $project, ProjectVersion $version, array $data)
+    {
+        $file->setActive(array_key_exists('active', $data) ? !!$data['active'] : false);
+        $file->setSelected(array_key_exists('selected', $data) ? !!$data['selected'] : false);
+        $file->setResource(array_key_exists('resource', $data) ? $data['resource'] : "");
+        $file->setOrder(array_key_exists('order', $data) ? $data['order'] : 1);
+        $file->setType(array_key_exists('type', $data) ? $data['type'] : "html");
+        $file->setName(array_key_exists('name', $data) ? $data['name'] : "");
+        $file->setContent(array_key_exists('content', $data) ? $data['content'] : "");
+        $file->setVersion($version);
+        $file->setProject($project);
+        $file->setUser($this->get('security.context')->getToken()->getUser());
+
+        return $file;
     }
 }

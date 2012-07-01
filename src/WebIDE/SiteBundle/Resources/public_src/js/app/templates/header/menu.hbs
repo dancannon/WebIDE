@@ -1,16 +1,19 @@
 <div id="menu_left" class="menu btn-toolbar">
     <div class="btn-group">
         <a class="switch_project btn"><i class="icon-folder-open icon-white"></i> Switch Project</a>
+        {{#unless read_only}}
         <a class="new btn"><i class="icon-file icon-white"></i> New</a>
         <a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
         <ul class="dropdown-menu hide">
             <li><a class="new">New File</a></li>
             <li><a class="import">Import File</a></li>
         </ul>
+        {{/unless}}
     </div>
 
     <div class="btn-group">
         <a class="run btn"><i class="icon-play icon-white"></i> Run</a>
+        {{#unless read_only}}
         <a class="save btn"><i class="icon-plus icon-white"></i> Save</a>
         <a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
         <ul class="dropdown-menu hide">
@@ -18,28 +21,34 @@
             <li><a class="new_version">New Version</a></li>
             {{#if versions}}
             <li class="divider"></li>
-
             {{#each versions}}
                 <li><a href="/{{../project.id}}/{{version_number}}">Version #{{version_number}}</a></li>
             {{/each}}
             {{/if}}
         </ul>
+        {{/unless}}
     </div>
 
     <div class="btn-group">
+        {{#unless read_only}}
+        <a class="settings btn"><i class="icon-settings icon-white"></i> Settings</a>
+        {{/unless}}
         <a class="download btn"><i class="icon-download-alt icon-white"></i> Download</a>
     </div>
 </div>
 
 <div id="menu_right" class="menu btn-toolbar">
     <div class="btn-group">
-        <a class="btn" href="{{url "/logout"}}" data-bypass="true">Log Out</a>
-        <!--<a class="btn" class="profile"><i class="icon-user icon-white"></i> Profile</a>-->
-        <!--<a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>-->
-        <!--<ul class="dropdown-menu hide">-->
-            <!--<li><a class="profile">View Profile</a></li>-->
-            <!--<li><a class="settings">Settings</a></li>-->
-            <!--<li><a href="{{url "/logout"}}" data-bypass="true">Log Out</a></li>-->
-        <!--</ul>-->
+        {{#unless read_only}}
+        <a class="btn" href="{{url "/profile"}}" data-bypass="true"><i class="icon-user icon-white"></i> Profile</a>
+        <a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+        <ul class="dropdown-menu hide">
+            <li><a class="profile" href="{{url "/profile"}}" data-bypass="true">View Profile</a></li>
+            <li><a class="settings" href="{{url "/profile/edit"}}" data-bypass="true">Settings </a></li>
+            <li><a href="{{url "/logout"}}" data-bypass="true">Log Out</a></li>
+        </ul>
+        {{else}}
+        <a class="btn" href="{{url "/login"}}" data-bypass="true"><i class="icon-user icon-white"></i> Login</a>
+        {{/unless}}
     </div>
 </div>

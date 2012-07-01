@@ -65,7 +65,7 @@
     CodeMirror.connect(sel, "dblclick", pick);
 
     sel.focus();
-    // Opera sometimes ignores focusing a freshly created node
+    // Opera sometimes ignores focusing a freshly createdAt node
     if (window.opera) setTimeout(function(){if (!done) sel.focus();}, 100);
     return true;
   };

@@ -1,6 +1,6 @@
-define(["app/webide","use!backbone", "jquery", "jqueryui", "use!bootstrap"],
+define(["app/webide","use!backbone", "jquery", "jqueryui", "use!bootstrap", "use!plugins/jquery.validate"],
 
-function(webide, Backbone, Files) {
+function(webide, Backbone) {
 
 	// Create a new module
 	var Modals = webide.module(),
@@ -15,7 +15,7 @@ function(webide, Backbone, Files) {
 
         events: {
             "click #cancel": "cancel",
-            "click #submit": "submit"
+            "submit form": "submit"
         },
 
         serialize: function() {
@@ -59,6 +59,7 @@ function(webide, Backbone, Files) {
 
         submit: function() {
             this.$el.modal("hide");
+            event.preventDefault();
         },
 
         close: function(event) {
@@ -79,7 +80,7 @@ function(webide, Backbone, Files) {
             };
         },
 
-        submit: function() {
+        submit: function(event) {
             app.trigger("file:create", {
                 name: this.$el.find("#filename").val(),
                 type: this.$el.find("#filetype").val(),
@@ -88,6 +89,23 @@ function(webide, Backbone, Files) {
 
             //After creating new file hide modal
             this.$el.modal("hide");
+            event.preventDefault();
+        },
+
+        postRender: function(el) {
+            $('form', el).validate({
+                errorElement: "span",
+                errorClass: "help-inline",
+                highlight: function(label) {
+                    $(label).closest('.control-group').addClass('error').removeClass('success');
+                },
+                unhighlight: function(label) {
+                    $(label).closest('.control-group').removeClass('error');
+                },
+                success: function(label) {
+                    label.closest('.control-group').addClass('success');
+                }
+            });
         }
 	});
 
@@ -101,7 +119,7 @@ function(webide, Backbone, Files) {
             };
         },
 
-        submit: function() {
+        submit: function(event) {
             //Load file content using ajax + server side script
 
             var url = this.$el.find("#fileurl").val();
@@ -116,17 +134,29 @@ function(webide, Backbone, Files) {
 
             //After creating new file hide modal
             this.$el.modal("hide");
+            event.preventDefault();
+        },
+
+        postRender: function(el) {
+            $('form', el).validate({
+                errorElement: "span",
+                errorClass: "help-inline",
+                highlight: function(label) {
+                    $(label).closest('.control-group').addClass('error').removeClass('success');
+                },
+                unhighlight: function(label) {
+                    $(label).closest('.control-group').removeClass('error');
+                },
+                success: function(label) {
+                    label.closest('.control-group').addClass('success');
+                }
+            });
         }
 	});
 
     Modals.Views.RenameFile = Modals.Views.Modal.extend({
         id: "rename_file",
         template: "modals/rename",
-
-        events: {
-            "click #cancel": "cancel",
-            "click #submit": "submit"
-        },
 
         submit: function() {
             var model = app.project.get('files').getByCid(this.$el.find('#cid').val());
@@ -138,6 +168,23 @@ function(webide, Backbone, Files) {
             }
 
             this.$el.modal("hide");
+            event.preventDefault();
+        },
+
+        postRender: function(el) {
+            $('form', el).validate({
+                errorElement: "span",
+                errorClass: "help-inline",
+                highlight: function(label) {
+                    $(label).closest('.control-group').addClass('error').removeClass('success');
+                },
+                unhighlight: function(label) {
+                    $(label).closest('.control-group').removeClass('error');
+                },
+                success: function(label) {
+                    label.closest('.control-group').addClass('success');
+                }
+            });
         }
     });
 
@@ -149,61 +196,74 @@ function(webide, Backbone, Files) {
             var model = app.project.get('files').getByCid(this.$el.find('#cid').val());
 
             if(model) {
-                var currSelected = app.project.get('files').getSelected(model.get('type') );
-                if(currSelected) {
-                    currSelected.set("selected", false);
-                }
-
-//                app.trigger("file:select", {
-//                    file: selectedFile,
-//                    type: selectedFile.get("type")
-//                });
-
                 model.destroy();
             }
 
             //After creating new file hide modal
             this.$el.modal("hide");
+            event.preventDefault();
         }
     });
 
-    Modals.Views.HtmlConfig = Modals.Views.Modal.extend({
-        id: "html_config",
-        template: "modals/html_config",
+    Modals.Views.DeleteProject = Modals.Views.Modal.extend({
+        id: "delete_project",
+        template: "modals/delete_project",
 
-        initialize: function() {
-            this.setViews({
-                "#js_files": [new Modals.Views.List({type: "javascript"})],
-                "#css_files": [new Modals.Views.List({type: "css"})]
+        submit: function() {
+            this.$el.modal("hide");
+            app.project.destroy();
+            app.router.navigate("/", {
+                trigger: true
             });
+
+            event.preventDefault();
+        }
+    });
+
+    Modals.Views.Settings = Modals.Views.Modal.extend({
+        id: "settings",
+        template: "modals/settings",
+
+        events: {
+            "click #cancel": "cancel",
+            "submit form": "submit",
+            "click #delete": "delete_project"
         },
 
-        postRender: function(el) {
-            $("#settingsTab a", el).click(function (e) {
-                e.preventDefault();
-                $(this).tab('show');
-            });
+        serialize: function() {
+            return {
+                name: app.project.get("name"),
+                description: app.project.get("description")
+            };
         },
 
         submit: function() {
-            this.$el.find('.files ul').find('li').each(function(index, item) {
-                var view = app.project.get('files').getView(function(view) {
-                    return view.$el = item;
-                });
+            app.project.save({
+                name: this.$("#name").val(),
+                description: this.$("#description").val()
+            });
 
-                if(view) {
-                    var metaData = app.project.get('files').get('metaData').get(view.model.id);
+            this.$el.modal("hide");
+            event.preventDefault();
+        },
 
-                    if(metaData) {
-                        metaData.set('order' ,index);
-                        metaData.set('active', item.find('active').selected());
-                    } else {
-                        app.project.get('files').get('metaData').create({
-                            id: view.model.id,
-                            order: index,
-                            active: item.find('active').selected()
-                        });
-                    }
+        delete_project: function() {
+            this.$el.modal("hide");
+            $("#delete_project").modal('show');
+        },
+
+        postRender: function(el) {
+            $('form', el).validate({
+                errorElement: "span",
+                errorClass: "help-inline",
+                highlight: function(label) {
+                    $(label).closest('.control-group').addClass('error').removeClass('success');
+                },
+                unhighlight: function(label) {
+                    $(label).closest('.control-group').removeClass('error');
+                },
+                success: function(label) {
+                    label.closest('.control-group').addClass('success');
                 }
             });
         }

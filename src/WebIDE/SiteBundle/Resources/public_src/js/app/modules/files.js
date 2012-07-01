@@ -9,7 +9,7 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
             defaults:{
                 active:true,
                 selected:false,
-                resource:false,
+                resource:"",
                 project: null,
                 order: 0,
                 type:'html',
@@ -44,7 +44,7 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
             },
 
             isResource: function() {
-                return this.get("resource") === null;
+                return this.get("resource") === "";
             },
 
             nextOrder: function() {
@@ -57,7 +57,67 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
             model: Files.Model,
 
             initialize: function() {
-                var that = this;
+                app.on("file:create", function(args) {
+                    if (!app.project.get("files").any(function(file) {
+                        return (file.get('name') === args.name) && (file.get('type') === args.type);
+                    })) {
+                        args.project = app.project;
+                        args.selected = true;
+
+                        var selected = app.project.get("files").getSelected(args.type);
+                        if(selected) {
+                            selected.set("selected", false);
+                        }
+
+                        var newfile = app.project.get("files").add(new Files.Model(args));
+
+                        app.trigger("file:select", {
+                            file: newfile,
+                            type: newfile.get("type")
+                        });
+
+                    } else {
+                        app.trigger("application:notify", {
+                            text: "A file already exists with that name",
+                            type: "error"
+                        });
+                    }
+                });
+                app.on("file:import", function(args) {
+                    if (!app.project.get("files").any(function(file) {
+                        return (file.get('name') === args.name) && (file.get('type') === args.type);
+                    })) {
+                        //Load file
+                        $.getJSON('/resource/' + encodeURI(args.url)).success(function(data) {
+                            args.project = app.project;
+                            args.resource = args.url;
+                            args.content = data.content;
+                            args.selected = true;
+
+                            var selected = app.project.get("files").getSelected(args.type);
+                            if(selected) {
+                                selected.set("selected", false);
+                            }
+
+                            var newfile = app.project.get("files").add(new Files.Model(args));
+
+                            app.trigger("file:select", {
+                                file: newfile,
+                                type: newfile.get("type")
+                            });
+                        }).error(function(data) {
+                                app.trigger("application:notify", {
+                                    message: data.message,
+                                    type: "error"
+                                });
+                            });
+                    } else {
+                        app.trigger("application:notify", {
+                            text: "A file already exists with that name",
+                            type: "error"
+                        });
+                    }
+                });
             },
 
             ofType: function (type, callback) {
@@ -98,9 +158,8 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
             tagName: "ul",
 
             initialize: function() {
-                app.project.on("add:files remove:files", function() {
-                    this.render();
-                }, this);
+                app.on("file:select", this.render, this);
+                app.project.on("add:files remove:files", this.render, this);
             },
 
             render: function(manage) {
@@ -161,10 +220,7 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
             },
 
             initialize: function() {
-                this.$el.addClass("file_" + this.model.get("type"));
-                this.model.on("change", function() {
-                    this.render();
-                }, this);
+                this.model.on("change:name", this.render, this);
                 this.model.on("remove", this.remove, this);
             },
 
@@ -209,6 +265,8 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
             render: function(manage) {
                 var that = this;
                 return manage(this).render().then(function(el) {
+                    $(el).addClass("file_" + this.model.get("type"));
+
                     var files = $(el).find('a').each(function(index, element) {
                         $(element).contextPopup({
                             items: [
@@ -255,6 +313,7 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
                 var view = manage(this),
                     that = this,
                     collection = app.project.get('files'),
+                    files = collection.ofType(that.type),
                     callback = function(file) {
                         if(!file.get("active")) {
                             return;
@@ -268,10 +327,18 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
                 this.views = {};
 
 //                //Add each file to the tabs
-                collection.ofType(that.type, callback);
+                _.each(files, callback);
+                if(files.length > 0) {
+                    this.insertView(new Files.Views.EndTabItem());
+                }
 
                 return view.render();
             }
+        });
+
+        Files.Views.EndTabItem = Backbone.View.extend({
+            tagName: "li",
+            className: "end_file_tab"
         });
 
         Files.Views.TabItem = Backbone.View.extend({
@@ -285,7 +352,7 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
             },
 
             initialize: function() {
-                this.model.on("change", this.render, this);
+                this.model.on("change:name", this.render, this);
                 this.model.on("remove", this.remove, this);
             },
 

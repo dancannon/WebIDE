@@ -109,7 +109,7 @@
                 LayoutManager.setupView(view, options);
 
                 // If no render override was specified assign the default; if the render
-                // is the fake function inserted, ensure that is updated as well.
+                // is the fake function inserted, ensure that is updatedAt as well.
                 if (view.render.__fake__) {
                     view._render = function(manage) {
                         return manage(this).render();
@@ -140,7 +140,7 @@
                         // Resolve the View's render handler deferred.
                         view.__manager__.handler.resolveWith(view, [view.el]);
 
-                        // When a view has been resolved, ensure that it is correctly updated
+                        // When a view has been resolved, ensure that it is correctly updatedAt
                         // and that any done callbacks are triggered.
                         viewDeferred.resolveWith(view, [view.el]);
 

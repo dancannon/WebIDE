@@ -113,7 +113,7 @@
     Backbone.Relational.eventQueue = new Backbone.BlockingQueue();
 
     /**
-     * Backbone.Store keeps track of all created (and destruction of) Backbone.RelationalModel.
+     * Backbone.Store keeps track of all createdAt (and destruction of) Backbone.RelationalModel.
      * Handles lookup for relations.
      */
     Backbone.Store = function() {
@@ -430,7 +430,7 @@
             Backbone.Relational.store.getCollection( this.instance )
                 .bind( 'relational:remove', this._modelRemovedFromCollection );
 
-            // When 'relatedModel' are created or destroyed, check if it affects this relation.
+            // When 'relatedModel' are createdAt or destroyed, check if it affects this relation.
             Backbone.Relational.store.getCollection( this.relatedModel )
                 .bind( 'relational:add', this._relatedModelAdded )
                 .bind( 'relational:remove', this._relatedModelRemoved );
@@ -688,13 +688,13 @@
             }
 
             // Notify new 'related' object of the new relation. Note we do re-apply even if this.related is oldRelated;
-            // that can be necessary for bi-directional relations if 'this.instance' was created after 'this.related'.
+            // that can be necessary for bi-directional relations if 'this.instance' was createdAt after 'this.related'.
             // In that case, 'this.instance' will already know 'this.related', but the reverse might not exist yet.
             _.each( this.getReverseRelations(), function( relation ) {
                 relation.addRelated( this.instance, options );
             }, this);
 
-            // Fire the 'update:<key>' event if 'related' was updated
+            // Fire the 'update:<key>' event if 'related' was updatedAt
             if ( !options.silentChange && this.related !== oldRelated ) {
                 var dit = this;
                 Backbone.Relational.eventQueue.add( function() {
@@ -766,7 +766,7 @@
                 throw new Error( 'collectionType must inherit from Backbone.Collection' );
             }
 
-            // Handle cases where a model/relation is created with a collection passed straight into 'attributes'
+            // Handle cases where a model/relation is createdAt with a collection passed straight into 'attributes'
             if ( this.keyContents instanceof Backbone.Collection ) {
                 this.setRelated( this._prepareCollection( this.keyContents ) );
             }
@@ -785,7 +785,7 @@
 
         /**
          * Bind events and setup collectionKeys for a collection that is to be used as the backing store for a HasMany.
-         * If no 'collection' is supplied, a new collection will be created of the specified 'collectionType' option.
+         * If no 'collection' is supplied, a new collection will be createdAt of the specified 'collectionType' option.
          * @param {Backbone.Collection} [collection]
          */
         _prepareCollection: function( collection ) {
@@ -1133,7 +1133,7 @@
             },
 
             /**
-             * Get all of the created relations.
+             * Get all of the createdAt relations.
              * @return {Backbone.Relation[]}
              */
             getRelations: function() {
@@ -1284,7 +1284,7 @@
             },
 
             /**
-             * Override 'change', so the change will only execute after 'set' has finised (relations are updated),
+             * Override 'change', so the change will only execute after 'set' has finised (relations are updatedAt),
              * and 'previousAttributes' will be available when the event is fired.
              */
             change: function( options ) {
@@ -1489,8 +1489,8 @@
             /**
              * Find an instance of `this` type in 'Backbone.Relational.store'.
              * - If `attributes` is a string or a number, `findOrCreate` will just query the `store` and return a model if found.
-             * - If `attributes` is an object, the model will be updated with `attributes` if found.
-             *   Otherwise, a new model is created with `attributes` (unless `options.create` is explicitly set to `false`).
+             * - If `attributes` is an object, the model will be updatedAt with `attributes` if found.
+             *   Otherwise, a new model is createdAt with `attributes` (unless `options.create` is explicitly set to `false`).
              * @param {Object|String|Number} attributes Either a model's id, or the attributes used to create or update a model.
              * @param {Object} [options]
              * @param {Boolean} [options.create=true]

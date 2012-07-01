@@ -54,6 +54,9 @@ fos_user:
     db_driver: orm
     firewall_name: main
     user_class: WebIDE\SiteBundle\Entity\User
+    from_email:
+        address:        noreply@webide.co
+        sender_name:    WebIDE
 
 fos_rest:
     routing_loader:

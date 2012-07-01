@@ -1,0 +1,19 @@
+<div class="profile" xmlns="http://www.w3.org/1999/html">
+    <div class="profile_header">
+        <h1>{{user.username|capitalize}}'s Projects</h1>
+    </div>
+    <div id="list-projects">
+        {% for project in projects %}
+            <div class="well">
+                <a href="{{path('webide_site_default_view', {'id': project.id})}}" class="project_name">#{{project.id}} {{project.name}}</a>
+                <time>{{project.updated|date}}</time>
+                {% if project.description %}
+                <div class="description">{{project.description}}</div>
+                {% endif %}
+            </div>
+        {% else %}
+            <p>{{user.username|capitalize}} does not have any projects yet</p>
+        {% endfor %}
+    </div>
+</div>
+<a href="{{path('homepage')}}" class="btn">Back</a>

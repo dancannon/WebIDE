@@ -6,12 +6,13 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\SerializerBundle\Annotation as Serializer;
 use Doctrine\Common\Collections\ArrayCollection;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * WebIDE\SiteBundle\Entity\Project
  *
  * @ORM\Table(name="projects")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="WebIDE\SiteBundle\Repository\ProjectRepository")
  */
 class Project implements OwnableEntity
 {
@@ -25,23 +26,28 @@ class Project implements OwnableEntity
     private $id;
 
     /**
+     * @ORM\Column(type="string", length=100)
+     * @Assert\MaxLength(100)
+     * @Assert\Type(type="string")
+     */
+    private $name;
+
+    /**
+     * @ORM\Column(type="text")
+     * @Assert\Type(type="string")
+     */
+    private $description;
+
+    /**
      * @var string $files
      *
      * @ORM\OneToMany(targetEntity="File", mappedBy="project", cascade={"all"})
+     * @Assert\Valid()
      */
     private $files;
 
     /**
-     * @ORM\OneToOne(targetEntity="ProjectVersion", cascade={"persist"})
-     * @ORM\JoinColumn(name="version_id", referencedColumnName="id")
-     * @Serializer\Accessor(getter="getVersionId")
-     */
-    private $version;
-
-    private $current_version;
-
-    /**
-     * @ORM\OneToMany(targetEntity="ProjectVersion", mappedBy="project")
+     * @ORM\OneToMany(targetEntity="ProjectVersion", mappedBy="project", cascade={"remove"})
      *
      */
     private $versions;
@@ -66,7 +72,7 @@ class Project implements OwnableEntity
      * @Gedmo\Timestampable(on="create")
      * @ORM\Column(type="datetime")
      */
-    private $created;
+    private $createdAt;
 
     /**
      * @var datetime $updated
@@ -74,7 +80,11 @@ class Project implements OwnableEntity
      * @Gedmo\Timestampable(on="update")
      * @ORM\Column(type="datetime")
      */
-    private $updated;
+    private $updatedAt;
+
+    private $current_version;
+
+    private $readOnly;
 
     public function __construct()
     {
@@ -89,6 +99,27 @@ class Project implements OwnableEntity
     public function getId()
     {
         return $this->id;
+    }
+
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function setName($name)
+    {
+        $this->name = $name;
+    }
+
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    public function setDescription($description)
+    {
+        $this->description = $description;
     }
 
     /**
@@ -131,38 +162,6 @@ class Project implements OwnableEntity
         return $this->files;
     }
 
-    /**
-     * @return string
-     */
-    public function getVersion()
-    {
-        return $this->version;
-    }
-
-    public function getVersionId()
-    {
-        return $this->getVersion() ? $this->getVersion()->getId() : null;
-    }
-
-    /**
-     * @param string $version
-     */
-    public function setVersion($version)
-    {
-        $this->version = $version;
-        $version->setProject($this);
-    }
-
-    public function getCurrentVersion()
-    {
-        return $this->current_version;
-    }
-
-    public function setCurrentVersion($current_version)
-    {
-        $this->current_version = $current_version;
-    }
-
     public function getVersions()
     {
         return $this->versions;
@@ -203,32 +202,52 @@ class Project implements OwnableEntity
     /**
      * @return \datetime
      */
-    public function getCreated()
+    public function getCreatedAt()
     {
-        return $this->created;
+        return $this->createdAt;
     }
 
     /**
      * @param \datetime $created
      */
-    public function setCreated($created)
+    public function setCreatedAt($created)
     {
-        $this->created = $created;
+        $this->createdAt = $created;
     }
 
     /**
      * @return \datetime
      */
-    public function getUpdated()
+    public function getUpdatedAt()
     {
-        return $this->updated;
+        return $this->updatedAt;
     }
 
     /**
      * @param \datetime $updated
      */
-    public function setUpdated($updated)
+    public function setUpdatedAt($updated)
     {
-        $this->updated = $updated;
+        $this->updatedAt = $updated;
+    }
+
+    public function getCurrentVersion()
+    {
+        return $this->current_version;
+    }
+
+    public function setCurrentVersion($current_version)
+    {
+        $this->current_version = $current_version;
+    }
+
+    public function getReadOnly()
+    {
+        return $this->readOnly;
+    }
+
+    public function setReadOnly($readOnly)
+    {
+        $this->readOnly = $readOnly;
     }
 }

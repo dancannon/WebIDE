@@ -1,6 +1,6 @@
-define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals", "use!codemirror", "use!cm_xml", "use!cm_html", "use!cm_css", "use!cm_js", "jqueryui"],
+define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals", "use!keymaster", "use!codemirror", "use!cm_xml", "use!cm_html", "use!cm_css", "use!cm_js", "jqueryui"],
 
-    function(webide, Backbone, Files, Modals, CodeMirror) {
+    function(webide, Backbone, Files, Modals, key, CodeMirror) {
         "use strict";
 
         // Create a new module
@@ -54,7 +54,7 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals",
                         onChange: function(cm, event) {
                             that.model.set("content", cm.getValue());
 
-                            app.trigger("app:reload");
+                            app.trigger("reload");
                         },
                         onGutterClick: foldFunc,
                         extraKeys: {
@@ -214,8 +214,8 @@ define(["app/webide", "use!backbone", "app/modules/files", "app/modules/modals",
 
                 //Setup events
                 app.on("editor:update", this.update_panels, this);
-                app.on("app:reload", this.reload, this);
-                app.on("app:run", this.run, this);
+                app.on("reload", this.reload, this);
+                app.on("run", this.run, this);
                 app.on("editor:fullscreen", this.fullscreen, this);
                 app.on("editor:fullscreen:exit", this.exit_fullscreen, this);
 

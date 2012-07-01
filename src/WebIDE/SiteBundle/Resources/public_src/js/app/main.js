@@ -15,6 +15,7 @@ require.config({
         codemirror: "vendors/codemirror",
         jqueryui: "vendors/jqueryui",
         moment: "vendors/moment",
+        keymaster: "vendors/keymaster",
 
         // Modes
         cm_html: "vendors/cm_modes/html/html",
@@ -34,7 +35,7 @@ require.config({
             deps: ["use!underscore", "use!handlebars", "jquery"],
             attach: "Backbone"
         },
-        "plugins/jquery.easing": {
+        "plugins/jquery.validate": {
             deps: ["jquery"]
         },
         "plugins/jquery.ui.position": {
@@ -52,8 +53,9 @@ require.config({
         "plugins/backbone.layoutmanager": {
             deps: ["use!backbone"]
         },
-        "plugins/backbone.localstorage": {
-            deps: ["use!backbone"]
+        "plugins/backbone.offline": {
+            deps: ["use!backbone"],
+            attach: "Offline"
         },
         "plugins/backbone.relational": {
             deps: ["use!backbone"]
@@ -69,6 +71,9 @@ require.config({
         },
         codemirror: {
             attach: "CodeMirror"
+        },
+        keymaster: {
+            attach: "key"
         },
 
         /** CodeMirror Modes **/
@@ -98,7 +103,7 @@ require.config({
 require(["app/webide",
 
 // Libs
-"jquery", "use!backbone", "use!underscore",
+"jquery", "use!backbone", "use!underscore", "use!keymaster",
 
 // Modules
 "app/modules/app", "app/modules/header", "app/modules/sidebar", "app/modules/editor", "app/modules/footer", "app/modules/files", "app/modules/project", "app/modules/modals",
@@ -106,7 +111,7 @@ require(["app/webide",
 // Plugins
 "use!plugins/jquery.noty"],
 
-function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Project, Modals) {
+function(webide, $, Backbone, _, key, App, Header, Sidebar, Editor, Footer, Files, Project, Modals) {
     // Shorthand the application namespace
     window.webide = webide;
     var app = webide.app;
@@ -162,12 +167,10 @@ function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Pr
                 }
                 if (xhr.status === 403) {
                     app.trigger("application:notify", {
-                        text: "You are not allowed to view this page",
+                        text: "You are not allowed to do that",
                         type: "error",
                         layout: "top",
-                        closeOnSelfClick: false,
-                        timeout: false,
-                        modal: true,
+                        closeOnSelfClick: true,
                         buttons: [{
                             text: 'Return to homepage',
                             type: "btn",
@@ -181,75 +184,28 @@ function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Pr
                         }]
                     });
                 }
-            });
-
-            app.on("app:save", function() {
-                if (app.project.has('current_version')) {
-                    app.router.navigate('/' + app.project.id + '/' + app.project.get('current_version'));
-                }
-            });
-
-            app.on("file:create", function(args) {
-                if (!app.project.get("files").any(function(file) {
-                    return (file.get('name') === args.name) && (file.get('type') === args.type);
-                })) {
-                    args.project = app.project;
-                    args.selected = true;
-
-                   var currSelected = app.project.get('files').getSelected(args.type);
-                   if(currSelected) {
-                        currSelected.set("selected", false);
-                   }
-
-                   // args.selected = true;
-                    var newfile = app.project.get("files").create(args);
-
-                    app.trigger("file:select", {
-                        file: newfile,
-                        type: newfile.get("type")
-                    });
-
-                } else {
+                if (xhr.status === 400) {
                     app.trigger("application:notify", {
-                        text: "A file already exists with that name",
-                        type: "error"
+                        text: "That data is invalid",
+                        type: "error",
+                        layout: "top",
+                        closeOnSelfClick: true
                     });
                 }
             });
-            app.on("file:import", function(args) {
-                if (!app.project.get("files").any(function(file) {
-                    return (file.get('name') === args.name) && (file.get('type') === args.type);
-                })) {
-                    //Load file
-                    $.getJSON('/resource/' + encodeURI(args.url)).success(function(data) {
-                        args.project = app.project;
-                        args.resource = args.url;
-                        args.content = data.content;
 
-                        var newfile = app.project.get("files").create(args);
-
-                        app.project.get('files').map(function(file) {
-                            if (file.get("type") === newfile.get("type") && file !== newfile) {
-                                file.set("selected", false);
-                            }
-                        });
-
-                        app.trigger("file:select", {
-                            file: newfile,
-                            type: newfile.get("type")
-                        });
-                    }).error(function(data) {
-                        app.trigger("application:notify", {
-                            message: data.message,
-                            type: "error"
-                        });
-                    });
-                } else {
-                    app.trigger("application:notify", {
-                        text: "A file already exists with that name",
-                        type: "error"
-                    });
-                }
+//            key.filter(function() { return true; });
+            key.filter = function(event) { return true; };
+            key('control+enter', 'editor', function(event) { app.trigger("run"); return false; });
+            key('alt+enter', 'editor', function(event) { app.trigger("reload"); return false; });
+            key('control+s', 'editor', function(event) { app.trigger("save"); return false; });
+            key('control+alt+n', 'editor', function(event) { $("#new_file").modal('show'); return false; });
+            key('control+alt+i', 'editor', function(event) { $("#import_file").modal('show'); return false; });
+            key('control+alt+o', 'editor', function(event) {
+                app.router.navigate('/', {
+                    trigger: true
+                });
+                return false;
             });
         },
 
@@ -263,6 +219,8 @@ function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Pr
         },
 
         view: function(id) {
+            key.setScope('editor');
+
             app.project.set({
                 id: id
             });
@@ -273,27 +231,31 @@ function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Pr
                 "#sidebar": new Sidebar.Views.Main(),
                 "#workspace": new Editor.Views.Main(),
                 "#footer": new Footer.Views.Main(),
-                "#modals": [new Modals.Views.NewFile(), new Modals.Views.ImportFile(), new Modals.Views.RenameFile(), new Modals.Views.DeleteFile(), new Modals.Views.HtmlConfig()]
+                "#modals": [new Modals.Views.NewFile(), new Modals.Views.ImportFile(), new Modals.Views.RenameFile(), new Modals.Views.DeleteFile(), new Modals.Views.DeleteProject(), new Modals.Views.Settings()]
             });
 
             $("#container").html(layout.el);
             layout.render();
 
-            app.project.fetch().error(function(resp) {
-                if (resp.status === 404) {
-                    app.trigger("application:notify", {
-                        text: "That project could not be found",
-                        type: "error",
-                        layout: "top"
-                    });
-                    app.router.navigate('/', {
-                        trigger: true
-                    });
+            app.project.fetch({
+                error: function(resp) {
+                    if (resp.status === 404) {
+                        app.trigger("application:notify", {
+                            text: "That project could not be found",
+                            type: "error",
+                            layout: "top"
+                        });
+                        app.router.navigate('/', {
+                            trigger: true
+                        });
+                    }
                 }
             });
         },
 
         viewVersion: function(id, version) {
+            key.setScope('editor');
+
             app.project.set({
                 id: id,
                 current_version: version
@@ -305,7 +267,7 @@ function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Pr
                 "#sidebar": new Sidebar.Views.Main(),
                 "#workspace": new Editor.Views.Main(),
                 "#footer": new Footer.Views.Main(),
-                "#modals": [new Modals.Views.NewFile(), new Modals.Views.ImportFile(), new Modals.Views.RenameFile(), new Modals.Views.DeleteFile(), new Modals.Views.HtmlConfig()]
+                "#modals": [new Modals.Views.NewFile(), new Modals.Views.ImportFile(), new Modals.Views.RenameFile(), new Modals.Views.DeleteFile(), new Modals.Views.DeleteProject(), new Modals.Views.Settings()]
             });
             $("#container").html(layout.el);
             layout.render().then(function() {
@@ -314,17 +276,18 @@ function(webide, $, Backbone, _, App, Header, Sidebar, Editor, Footer, Files, Pr
             });
 
             app.project.fetch({
-                url: globals.baseUrl + '/projects/' + id + '/' + version
-            }).error(function(resp) {
-                if (resp.status === 404) {
-                    app.trigger("application:notify", {
-                        text: "That project could not be found",
-                        type: "error",
-                        layout: "top"
-                    });
-                    app.router.navigate('/', {
-                        trigger: true
-                    });
+                url: globals.baseUrl + '/projects/' + id + '/' + version,
+                error: function(resp) {
+                    if (resp.status === 404) {
+                        app.trigger("application:notify", {
+                            text: "That project could not be found",
+                            type: "error",
+                            layout: "top"
+                        });
+                        app.router.navigate('/', {
+                            trigger: true
+                        });
+                    }
                 }
             });
         },

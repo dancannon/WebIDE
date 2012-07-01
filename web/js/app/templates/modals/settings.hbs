@@ -1,0 +1,16 @@
+<form class="modal-form form">
+    <div class="modal-header tabbed-header">
+        <a class="close" data-dismiss="modal">×</a>
+        <h3>Settigns</h3>
+    </div>
+    <div class="modal-body">
+        <label for="name">Name</label>
+        <input type="input" id="name" name="name" value="{{name}}" required="false" maxlength="100">
+        <label for="description">Description</label>
+        <textarea type="input" id="description" name="description" class="input-xlarge" required="false">{{description}}</textarea>
+    </div>
+    <div class="modal-footer">
+        <a class="btn btn-primary" id="submit">Ok</a>
+        <button class="btn btn-danger" id="delete">Delete</button>
+    </div>
+</form>

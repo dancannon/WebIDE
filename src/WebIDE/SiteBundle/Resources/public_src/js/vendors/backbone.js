@@ -374,7 +374,7 @@
             }
 
             // After a successful server-side save, the client is (optionally)
-            // updated with the server-side state.
+            // updatedAt with the server-side state.
             var model = this;
             var success = options.success;
             options.success = function (resp, status, xhr) {
@@ -500,7 +500,7 @@
 
         // Return an object containing all the attributes that have changed, or
         // false if there are no changed attributes. Useful for determining what
-        // parts of a view need to be updated and/or what attributes need to be
+        // parts of a view need to be updatedAt and/or what attributes need to be
         // persisted to the server. Unset attributes will be set to undefined.
         // You can also pass an attributes object to diff against the model,
         // determining if there *would be* a change.

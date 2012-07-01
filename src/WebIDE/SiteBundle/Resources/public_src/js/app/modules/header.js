@@ -18,6 +18,7 @@ define(["app/webide","use!backbone","app/modules/modals","app/modules/versions"]
                 "click .run": "run",
                 "click .save": "save",
                 "click .new_version": "new_version",
+                "click .settings": "settings",
                 "click .download": "download"
             },
 
@@ -29,13 +30,13 @@ define(["app/webide","use!backbone","app/modules/modals","app/modules/versions"]
 
             serialize: function() {
                 return {
+                    read_only: app.project.get('read_only'),
                     project: app.project.toJSON(),
                     versions: app.project.get("versions").toJSON()
                 };
             },
 
             switch_project: function() {
-                app.project.save();
                 app.router.navigate('/', {
                     trigger: true
                 });
@@ -47,35 +48,13 @@ define(["app/webide","use!backbone","app/modules/modals","app/modules/versions"]
                 $("#import_file").modal('show');
             },
             run: function() {
-                app.trigger("app:run");
+                app.trigger("run");
             },
             save: function() {
-                app.project.save().success(function() {
-                    app.trigger("app:save");
-                    app.trigger("app:reload");
-                });
+                app.trigger("save");
             },
             new_version: function() {
-                var  id = app.project.id;
-                app.project.fetch({
-                    url: globals.baseUrl + '/projects/' + id + '/version'
-                }).error(function(resp) {
-                    if (resp.status === 404) {
-                        app.trigger("application:notify", {
-                            text: "That project could not be found",
-                            type: "error",
-                            layout: "top"
-                        });
-                        app.router.navigate('/', {
-                            trigger: true
-                        });
-                    }
-                }).success(function(resp) {
-                    var version = app.project.get('version').get('version_number');
-                    app.router.navigate('/' + id + '/' + version, {
-                        trigger: true
-                   });
-                });
+                app.trigger("new_version");
             },
             download: function() {
                 app.trigger("application:notify", {
@@ -85,6 +64,10 @@ define(["app/webide","use!backbone","app/modules/modals","app/modules/versions"]
                 });
                 //TODO: Fix
 //                app.router.navigate("projects/" + webide.app.project.id + "/download", {trigger: false});
+            },
+
+            settings: function() {
+                $("#settings").modal('show');
             },
 
             render: function(manage) {

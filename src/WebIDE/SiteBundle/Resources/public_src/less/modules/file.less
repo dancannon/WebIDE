@@ -45,7 +45,8 @@
 /** File Tabs **/
 .file_tabs {
     height: 26px;
-    border: 1px solid #a5a5a5;
+    border:solid #a5a5a5;
+    border-width: 0 1px 1px 0;
     overflow: hidden;
     display: block;
     #gradient > .vertical(#FFF, #e7e7e7);
@@ -59,19 +60,10 @@
 .file_tabs ul {
     margin: 0;
     padding: 0;
-    width: 9999px;
 }
 
-.file_tabs > .file_tab {
+.file_tabs .file_tab {
     float: left;
-}
-
-.file_tab:first-child {
-    border-left-width: 0 !important;
-}
-
-.file_tab:last-child {
-    border-width: 0 1px 1px 1px;
 }
 
 .file_tab {
@@ -80,25 +72,28 @@
     height: 22px;
     width: 150px;
     border: 1px solid #a5a5a5;
-    border-width: 0 0 1px 1px;
+    border-width: 0 1px 1px 0;
     #gradient > .vertical(#e3e3e3, #d0d0d0);
+    z-index: 2;
 }
 
 .file_tab.tab_active {
-    background: none;
+    #gradient > .vertical(#FFF, #e7e7e7);
     border-bottom: none;
+    height: 23px;
 }
 
-.file_tab:last-child:after {
-    content: "";
-    display: block;
+.end_file_tab {
+    list-style: none;
     position: relative;
-    left: 150px;
-    top: -20px;
-    right: 0;
     height: 22px;
-    width: 9999px;
+    width: 100%;
+    border: 1px solid #a5a5a5;
+    border-width: 0 0 1px 1px;
     #gradient > .vertical(#e3e3e3, #d0d0d0);
+
+    height: 22px;
+    z-index: 1;
     border: 1px solid #a5a5a5;
     border-width: 0 0 1px 1px;
     border-right: none;
@@ -124,4 +119,8 @@
     top: 2px;
     right: 3px;
     padding: 0;
+}
+
+.file_tabs:first-child {
+    border-left-width: 1px;
 }

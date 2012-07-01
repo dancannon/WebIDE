@@ -11,7 +11,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * WebIDE\SiteBundle\Entity\ProjectVersion
  *
  * @ORM\Table(name="project_versions")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="WebIDE\SiteBundle\Repository\VersionRepository")
  */
 class ProjectVersion
 {
@@ -30,7 +30,7 @@ class ProjectVersion
     private $versionNumber = 1;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Project")
+     * @ORM\ManyToOne(targetEntity="Project", cascade={"all"})
      * @Serializer\Accessor(getter="getProjectId")
      */
     private $project;
@@ -41,7 +41,7 @@ class ProjectVersion
      * @Gedmo\Timestampable(on="create")
      * @ORM\Column(type="datetime")
      */
-    private $created;
+    private $createdAt;
 
     /**
      * @var datetime $updated
@@ -49,7 +49,7 @@ class ProjectVersion
      * @Gedmo\Timestampable(on="update")
      * @ORM\Column(type="datetime")
      */
-    private $updated;
+    private $updatedAt;
 
     /**
      * @return int
@@ -92,32 +92,32 @@ class ProjectVersion
     /**
      * @return datetime
      */
-    public function getCreated()
+    public function getCreatedAt()
     {
-        return $this->created;
+        return $this->createdAt;
     }
 
     /**
      * @param datetime $created
      */
-    public function setCreated($created)
+    public function setCreatedAt($created)
     {
-        $this->created = $created;
+        $this->createdAt = $created;
     }
 
     /**
      * @return datetime
      */
-    public function getUpdated()
+    public function getUpdatedAt()
     {
-        return $this->updated;
+        return $this->updatedAt;
     }
 
     /**
      * @param datetime $updated
      */
-    public function setUpdated($updated)
+    public function setUpdatedAt($updated)
     {
-        $this->updated = $updated;
+        $this->updatedAt = $updated;
     }
 }

@@ -18,13 +18,7 @@ class ProjectController extends Controller
 {
     public function getProjectsAction()
     {
-        $this->checkPermission();
-
-        $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE fv.id = pv AND p.user = :user");
-        $query->setParameter("user", $this->get('security.context')->getToken()->getUser());
-
-        $projects = $query->getResult();
+        $projects = $this->getDoctrine()->getRepository('WebIDESiteBundle:Project')->findProjectsByUser($this->get('security.context')->getToken()->getUser());
 
         $view = View::create()
             ->setStatusCode(200)
@@ -40,12 +34,7 @@ class ProjectController extends Controller
     {
         $this->checkPermission();
 
-        $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p JOIN p.files f JOIN p.version pv JOIN f.version fv WHERE fv.id = pv AND p.user = :user ORDER BY p.updated DESC");
-        $query->setMaxResults(5);
-        $query->setParameter("user", $this->get('security.context')->getToken()->getUser());
-
-        $projects = $query->execute();
+        $projects = $this->getDoctrine()->getRepository('WebIDESiteBundle:Project')->findProjectsByUser($this->get('security.context')->getToken()->getUser(), 5);
 
         $view = View::create()
             ->setStatusCode(200)
@@ -56,27 +45,19 @@ class ProjectController extends Controller
 
     public function getProjectAction($id)
     {
-        $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("
-            SELECT p, f
-            FROM WebIDESiteBundle:Project p
-            LEFT JOIN p.files f
-                WITH f.version = p.version
-            WHERE p.id = :id
-        ");
-        $query->setParameter("id", $id);
-
-        $project = $query->getResult();
-
-        if (!$project || !isset($project[0])) {
+        try {
+            $version = $this->getDoctrine()->getRepository('WebIDESiteBundle:ProjectVersion')->findVersionByProject($id);
+            $project = $this->getDoctrine()->getRepository('WebIDESiteBundle:Project')->findProject($id, $version);
+            $project->setReadOnly($this->get('security.context')->getToken()->getUser() !== $project->getUser());
+        } catch (\Doctrine\Orm\NonUniqueResultException $e) {
+            throw $this->createNotFoundException('Project not found.');
+        } catch (\Doctrine\Orm\NoResultException $e) {
             throw $this->createNotFoundException('Project not found.');
         }
 
-
-        $project = $project[0];
-        $project->setCurrentVersion($project->getVersion()->getVersionNumber());
-
-        $this->checkPermission($project);
+        // Set the current version of the project and its read only status (Not stored in db)
+        $project->setCurrentVersion($version->getVersionNumber());
+        $project->setReadOnly($this->get('security.context')->getToken()->getUser() !== $project->getUser());
 
         $view = View::create()
             ->setStatusCode(200)
@@ -91,40 +72,19 @@ class ProjectController extends Controller
      */
     public function getProjectVersionAction($id, $version)
     {
-        $em = $this->getDoctrine()->getManager();
-
-        // Find version
-        $query = $em->createQuery("SELECT v FROM WebIDESiteBundle:ProjectVersion v WHERE v.versionNumber = :versionNumber AND v.project = :id");
-        $query->setParameter("id", $id);
-        $query->setParameter("versionNumber", $version);
-        $version = $query->getResult();
-
-        if (!$version || !isset($version[0])) {
+        try {
+            $version = $this->getDoctrine()->getRepository('WebIDESiteBundle:ProjectVersion')->findVersion($id, $version);
+            $project = $this->getDoctrine()->getRepository('WebIDESiteBundle:Project')->findProjectByVersion($id, $version);
+            $project->setReadOnly($this->get('security.context')->getToken()->getUser() !== $project->getUser());
+        } catch (\Doctrine\Orm\NonUniqueResultException $e) {
+            throw $this->createNotFoundException('Project not found.');
+        } catch (\Doctrine\Orm\NoResultException $e) {
             throw $this->createNotFoundException('Project not found.');
         }
 
-        $version = $version[0];
-
-        //Find project
-        $query = $em->createQuery("
-            SELECT p, f
-            FROM WebIDESiteBundle:Project p
-            LEFT JOIN p.files f
-                WITH f.version = :version
-            WHERE p.id = :id AND :version MEMBER OF p.versions
-        ");
-        $query->setParameter("id", $id);
-        $query->setParameter("version", $version);
-        $project = $query->getResult();
-
-        if (!$project || !isset($project[0])) {
-            throw $this->createNotFoundException('Project not found.');
-        }
-
-        $project = $project[0];
+        // Set the current version of the project and its read only status (Not stored in db)
         $project->setCurrentVersion($version->getVersionNumber());
-
-        $this->checkPermission($project);
+        $project->setReadOnly($this->get('security.context')->getToken()->getUser() !== $project->getUser());
 
         $view = View::create()
             ->setStatusCode(200)
@@ -139,62 +99,52 @@ class ProjectController extends Controller
      */
     public function newProjectVersionAction($id)
     {
-        if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(403, "Unauthorized");
-        }
+        $this->checkPermission();
 
-        // Fetch the project from the database
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f WITH f.version = p.version WHERE p.id = :id");
-        $query->setParameter("id", $id);
 
-        $project = $query->getResult();
-
-        if (!$project || !isset($project[0])) {
+        try {
+            $version = $this->getDoctrine()->getRepository('WebIDESiteBundle:ProjectVersion')->findVersionByProject($id);
+            $project = $this->getDoctrine()->getRepository('WebIDESiteBundle:Project')->findProject($id, $version);
+            $project->setReadOnly($this->get('security.context')->getToken()->getUser() !== $project->getUser());
+        } catch (\Doctrine\Orm\NonUniqueResultException $e) {
+            throw $this->createNotFoundException('Project not found.');
+        } catch (\Doctrine\Orm\NoResultException $e) {
             throw $this->createNotFoundException('Project not found.');
         }
 
-        $project = $project[0];
+        $this->checkPermission($project);
 
         // Create the new version
-        $version = new ProjectVersion();
-        $version->setVersionNumber($project->getVersion()->getVersionNumber());
-        $version->incVersionNumber();
+        $newVersion = new ProjectVersion();
+        $newVersion->setVersionNumber($version->getVersionNumber());
+        $newVersion->incVersionNumber();
+        $newVersion->setProject($project);
 
         // Clone each file and set its version to the new version
         $newFiles = array();
         foreach($project->getFiles() as $file) {
             // If the file is not of the same version as the current version skip file
-            if($file->getVersion() && $file->getVersion()->getId() !== $project->getVersion()->getId()) {
+            if($file->getVersion() && $file->getVersion()->getId() !== $version->getId()) {
                 continue;
             }
 
-            $newFile = new File();
-
-            $newFile->setActive($file->isActive());
-            $newFile->setSelected($file->isSelected());
-            $newFile->setResource($file->isResource());
-            $newFile->setOrder($file->getOrder());
-            $newFile->setType($file->getType());
-            $newFile->setName($file->getName());
-            $newFile->setContent($file->getContent());
-            $newFile->setProject($project);
-            $newFile->setVersion($version);
-            $newFile->setUser($this->get('security.context')->getToken()->getUser());
+            $newFile = $this->bindFileData(new File(), $project, $newVersion, $file->toArray());
 
             $newFiles[] = $newFile;
         }
 
         $project->setFiles($newFiles);
-        $project->setVersion($version);
 
-        $em->persist($project);
-        $em->flush();
-
-        // Set the current version of the project (Not stored in db)
-        $project->setCurrentVersion($project->getVersion()->getVersionNumber());
+        // Set the current version of the project and its read only status (Not stored in db)
+        $project->setCurrentVersion($newVersion->getVersionNumber());
+        $project->setReadOnly($this->get('security.context')->getToken()->getUser() !== $project->getUser());
 
         $this->checkPermission($project);
+
+        $em->persist($newVersion);
+        $em->persist($project);
+        $em->flush();
 
         $view = View::create()
             ->setStatusCode(200)
@@ -209,14 +159,24 @@ class ProjectController extends Controller
 
         $em = $this->getDoctrine()->getManager();
 
+        $version = new ProjectVersion();
         $project = new Project();
         $project->setUser($this->get('security.context')->getToken()->getUser());
-        $project = $this->createProjectFromRequest($project);
+        $project = $this->createProjectFromRequest($project, $version);
 
-        //TODO: Add validation
+        $version->setProject($project);
 
-        $project->setCurrentVersion($project->getVersion()->getVersionNumber());
+        $validator = $this->get('validator');
+        $errors = $validator->validate($project);
 
+        if (count($errors) > 0) {
+            throw new HttpException(400, "Invalid Request");
+        }
+
+        $project->setCurrentVersion($version->getVersionNumber());
+        $project->setReadOnly($this->get('security.context')->getToken()->getUser() !== $project->getUser());
+
+        $em->persist($version);
         $em->persist($project);
         $em->flush();
 
@@ -229,29 +189,37 @@ class ProjectController extends Controller
 
     public function putProjectAction($id)
     {
-        if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(403, "Unauthorized");
-        }
+        $this->checkPermission();
 
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f WITH f.version = p.version WHERE p.id = :id");
-        $query->setParameter("id", $id);
 
-        $project = $query->getResult();
-
-        if (!$project || !isset($project[0])) {
+        try {
+            $version = $this->getDoctrine()->getRepository('WebIDESiteBundle:ProjectVersion')->findVersionByProject($id);
+            $project = $this->getDoctrine()->getRepository('WebIDESiteBundle:Project')->findProject($id, $version);
+            $project->setReadOnly($this->get('security.context')->getToken()->getUser() !== $project->getUser());
+        } catch (\Doctrine\Orm\NonUniqueResultException $e) {
+            throw $this->createNotFoundException('Project not found.');
+        } catch (\Doctrine\Orm\NoResultException $e) {
             throw $this->createNotFoundException('Project not found.');
         }
 
-        $project = $project[0];
-        $project = $this->createProjectFromRequest($project);
+        $this->checkPermission($project);
 
-        //TODO: Add validation
+        $project = $this->createProjectFromRequest($project, $version);
 
+        $validator = $this->get('validator');
+        $errors = $validator->validate($project);
+
+        if (count($errors) > 0) {
+            throw new HttpException(400, "Invalid Request");
+        }
+
+        $em->persist($version);
         $em->persist($project);
         $em->flush();
 
-        $project->setCurrentVersion($project->getVersion()->getVersionNumber());
+        $project->setCurrentVersion($version->getVersionNumber());
+        $project->setReadOnly($this->get('security.context')->getToken()->getUser() !== $project->getUser());
 
         $this->checkPermission($project);
 
@@ -264,26 +232,21 @@ class ProjectController extends Controller
 
     public function deleteProjectAction($id)
     {
-        if (false === $this->get('security.context')->isGranted('ROLE_USER')) {
-            throw new HttpException(403, "Unauthorized");
-        }
+        $this->checkPermission();
 
-        $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery("SELECT p, f FROM WebIDESiteBundle:Project p LEFT JOIN p.files f WITH f.version = p.version WHERE p.id = :id");
-        $query->setParameter("id", $id);
-
-        $project = $query->getResult();
-
-        if (!$project || !isset($project[0])) {
+        try {
+            $version = $this->getDoctrine()->getRepository('WebIDESiteBundle:ProjectVersion')->findVersionByProject($id);
+            $project = $this->getDoctrine()->getRepository('WebIDESiteBundle:Project')->findProject($id, $version);
+            $project->setReadOnly($this->get('security.context')->getToken()->getUser() !== $project->getUser());
+        } catch (\Doctrine\Orm\NonUniqueResultException $e) {
             throw $this->createNotFoundException('Project not found.');
         }
 
-        $project = $project[0];
-
         $this->checkPermission($project);
 
-        // Delete user
-        $em->remove($project);
+        // Delete project
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($project);
         $em->flush();
 
         $view = View::create()
@@ -292,66 +255,34 @@ class ProjectController extends Controller
         return $this->get('fos_rest.view_handler')->handle($view);
     }
 
-    protected function createProjectFromRequest(Project $project, $newVersion = false)
+    protected function createProjectFromRequest(Project $project, $version)
     {
-        $em = $this->getDoctrine()->getManager();
         $request = $this->getRequest();
-        $version = $project->getVersion();
-
-        // Create the new version
-        if(!$version) {
-            $version = new ProjectVersion();
-        } else {
-            // If the current version is not the same as the db project then create a new version
-            $versionRequest = $request->get("current_version", $project->getVersion()->getVersionNumber());
-            if ($project->getVersion()->getVersionNumber() !== $versionRequest) {
-                $version = new ProjectVersion();
-                $version->setVersionNumber($project->getVersion()->getVersionNumber());
-                $version->incVersionNumber();
-
-                $newVersion = true;
-            }
-        }
-
-        //Init hash
-        $hash = hash_init("md5");
-
-        //Create files
         $files = array();
+        $hash = hash_init("md5");
 
         foreach ($request->get('files', array()) as $fileData) {
             $file = new File();
 
             // If a new version is requested create a new file
-            if($newVersion) $file = new File();
-
-            // Fetch the file from the db
-            if(isset($fileData['id'])) {
+            if(isset($fileData['id']) && $version->getId()) {
                 $file = $this->getDoctrine()->getRepository("WebIDESiteBundle:File")->find(array('id' => $fileData['id']));
                 // If the file is not of the same version as the current version skip file
-                if($file->getVersion() && $file->getVersion()->getId() !== $project->getVersion()->getId()) {
+                if($file->getVersion() && $file->getVersion()->getId() !== $version->getId()) {
                     continue;
                 }
             }
 
-            $file->setActive($fileData['active']);
-            $file->setSelected($fileData['selected']);
-            $file->setResource($fileData['resource']);
-            $file->setOrder($fileData['order']);
-            $file->setType($fileData['type']);
-            $file->setName($fileData['name']);
-            $file->setContent($fileData['content']);
-            $file->setVersion($version);
-            $file->setUser($this->get('security.context')->getToken()->getUser());
-
+            $file = $this->bindFileData($file, $project, $version, $fileData);
             $files[] = $file;
 
             //Update hash
             hash_update($hash, $file->getContent());
         }
 
+        $project->setName($request->get('name', ''));
+        $project->setDescription($request->get('description', ''));
         $project->setHash(hash_final($hash));
-        $project->setVersion($version);
         $project->setFiles($files);
 
         return $project;
@@ -375,5 +306,21 @@ class ProjectController extends Controller
 
             return true;
         }
+    }
+
+    protected function bindFileData(File $file, Project $project, ProjectVersion $version, array $data)
+    {
+        $file->setActive(array_key_exists('active', $data) ? !!$data['active'] : false);
+        $file->setSelected(array_key_exists('selected', $data) ? !!$data['selected'] : false);
+        $file->setResource(array_key_exists('resource', $data) ? $data['resource'] : "");
+        $file->setOrder(array_key_exists('order', $data) ? $data['order'] : 1);
+        $file->setType(array_key_exists('type', $data) ? $data['type'] : "html");
+        $file->setName(array_key_exists('name', $data) ? $data['name'] : "");
+        $file->setContent(array_key_exists('content', $data) ? $data['content'] : "");
+        $file->setVersion($version);
+        $file->setProject($project);
+        $file->setUser($this->get('security.context')->getToken()->getUser());
+
+        return $file;
     }
 }

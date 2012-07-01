@@ -1,17 +1,17 @@
-<div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>Rename File</h3>
-</div>
-<div class="modal-body">
-    <div class="form">
+<form class="modal-form form">
+    <div class="modal-header">
+        <a class="close" data-dismiss="modal">×</a>
+        <h3>Rename File</h3>
+    </div>
+    <div class="modal-body">
         <div class="control-group">
             <label for="filename">File Name</label>
-            <input type="input" id="filename">
+            <input type="input" id="filename" name="filename" required="true" maxlength="100"/>
         </div>
     </div>
-</div>
-<div class="modal-footer">
-    <input id="cid" type="hidden" />
-    <a href="#" class="btn" id="cancel">Cancel</a>
-    <a href="#" class="btn btn-primary" id="submit">Rename</a>
-</div>
+    <div class="modal-footer">
+        <input id="cid" type="hidden" />
+        <a href="#" class="btn" id="cancel">Cancel</a>
+        <button class="btn btn-primary" id="submit" type="submit">Rename</button>
+    </div>
+</form>

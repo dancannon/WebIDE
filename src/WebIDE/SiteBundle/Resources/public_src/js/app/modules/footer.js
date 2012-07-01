@@ -12,11 +12,12 @@ function(webide, Backbone) {
         keep: true,
 
         initialize: function() {
-            app.on("app:save", this.render, this);
+            app.on("save", this.render, this);
         },
 
         render: function(manage) {
             return manage(this).render().then(function(el) {
+                console.log("timeago");
                 $('time.timeago', el).timeago();
             });
         }

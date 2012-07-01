@@ -1,0 +1,16 @@
+{% extends "FOSUserBundle::layout.html.twig" %}
+
+{% block content %}
+<div class="container">
+    <div id="main">
+        <div class="header clearfix">
+            <div class="logo">
+                <h1>WebIDE</h1>
+            </div>
+        </div>
+        <div class="content clearfix">
+            {% include "FOSUserBundle:Profile:show_content.html.twig" %}
+        </div>
+    </div>
+</div>
+{% endblock %}

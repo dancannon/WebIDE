@@ -1,8 +1,8 @@
 #workspace {
-    background: #797C85;
+    background: #DDD;
 
     position: absolute;
-    top: 50px;
+    top: 52px;
     bottom: 50px;
     right: 0;
     left: 275px;
@@ -24,31 +24,19 @@
     right: 0;
 }
 
-//#workspace .column .inner {
-//    margin: 5px 5px 0 0;
-//}
-//
 #workspace .column.left .inner {
     margin-right: 0px;
 }
-//
-//#workspace .column .panel:last-child .inner {
-//    margin-bottom: 5px;
-//}
 
 #workspace .panel {
     position: relative;
     overflow: hidden;
-    height: 33.3%;
+    height: 100/3%;
 }
 
 #workspace .inner {
     background: #CCC;
-    -moz-box-shadow: 0px 0px 2px #000000;
-    -webkit-box-shadow: 0px 0px 2px #000000;
-    box-shadow: 0px 0px 2px #000000;
-    margin: 5px;
-    padding: 2px;
+    margin: 0;
     display: block;
     position:absolute;
     height:auto;
@@ -65,28 +53,26 @@
     border: 1px solid #a5a5a5;
     border-top-width: 0;
     position: absolute;
-    left: 2px;
-    top: 30px;
-    right: 2px;
-    bottom: 2px;
+    left: 0px;
+    top: 27px;
+    right: 0px;
+    bottom: 0px;
 }
 
 #workspace .frame.disabled {
-    background: #a5a5a5;
+    background: #EEE;
 }
 
 #workspace #preview_panel {
     height: 100%;
 }
 
-#workspace #preview_panel .inner {
-    margin-bottom: 5px;
-    padding: 2px 4px 4px 2px;
-}
-
 #workspace #preview_panel iframe {
     height: 100%;
     width: 100%;
+    padding: 0;
+    margin: 0;
+    border: 0;
 }
 
 #workspace .preview {
@@ -108,7 +94,6 @@
 
 #workspace .panel.disabled .frame, #workspace .panel.readonly .frame {
     background: #DDD;
-    border-color: #DDD;
 }
 
 #workspace .panel.disabled .CodeMirror, #workspace .panel.disabled textarea{

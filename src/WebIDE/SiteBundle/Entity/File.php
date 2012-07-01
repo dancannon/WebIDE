@@ -4,6 +4,7 @@ namespace WebIDE\SiteBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use JMS\SerializerBundle\Annotation as Serializer;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity
@@ -19,27 +20,35 @@ class File implements OwnableEntity
     protected $id;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=100)
+     * @Assert\MinLength(1)
+     * @Assert\MaxLength(100)
+     * @Assert\Type(type="string")
+     * @Assert\NotBlank()
      */
     protected $name;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Assert\Type(type="boolean")
      */
     protected $active;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Assert\Type(type="boolean")
      */
     protected $selected;
 
     /**
      * @ORM\Column(type="string", nullable=true)
+     * @Assert\Type(type="string")
      */
     protected $resource;
 
     /**
      * @ORM\Column(type="integer", name="file_order")
+     * @Assert\Type(type="integer")
      */
     protected $order;
 
@@ -51,11 +60,13 @@ class File implements OwnableEntity
 
     /**
      * @ORM\Column(type="string", length=10)
+     * @Assert\Type(type="string")
      */
     protected $type;
 
     /**
      * @ORM\Column(type="text")
+     * @Assert\Type(type="string")
      */
     protected $content;
 
@@ -78,7 +89,7 @@ class File implements OwnableEntity
      * @Gedmo\Timestampable(on="create")
      * @ORM\Column(type="datetime")
      */
-    private $created;
+    private $createdAt;
 
     /**
      * @var datetime $updated
@@ -86,7 +97,7 @@ class File implements OwnableEntity
      * @Gedmo\Timestampable(on="update")
      * @ORM\Column(type="datetime")
      */
-    private $updated;
+    private $updatedAt;
 
     public function getId()
     {
@@ -123,7 +134,7 @@ class File implements OwnableEntity
         $this->selected = $selected;
     }
 
-    public function isResource()
+    public function getResource()
     {
         return $this->resource;
     }
@@ -206,32 +217,50 @@ class File implements OwnableEntity
     /**
      * @return \datetime
      */
-    public function getCreated()
+    public function getCreatedAt()
     {
-        return $this->created;
+        return $this->createdAt;
     }
 
     /**
      * @param \datetime $created
      */
-    public function setCreated($created)
+    public function setCreatedAt($created)
     {
-        $this->created = $created;
+        $this->createdAt = $created;
     }
 
     /**
      * @return \datetime
      */
-    public function getUpdated()
+    public function getUpdatedAt()
     {
-        return $this->updated;
+        return $this->updatedAt;
     }
 
     /**
      * @param \datetime $updated
      */
-    public function setUpdated($updated)
+    public function setUpdatedAt($updated)
     {
-        $this->updated = $updated;
+        $this->updatedAt = $updated;
+    }
+
+    public function toArray()
+    {
+        return array(
+            'id' => $this->getId(),
+            'active' => $this->isActive(),
+            'selected' => $this->isSelected(),
+            'resource' => $this->getResource(),
+            'order' => $this->getOrder(),
+            'project' => $this->getProject(),
+            'type' => $this->getType(),
+            'name' => $this->getName(),
+            'content' => $this->getContent(),
+            'user' => $this->getUser(),
+            'createdAt' => $this->getCreatedAt(),
+            'updatedAt' => $this->getUpdatedAt()
+        );
     }
 }

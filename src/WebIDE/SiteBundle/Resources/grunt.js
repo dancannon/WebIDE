@@ -69,6 +69,7 @@ module.exports = function (grunt) {
                         codemirror: "vendors/codemirror",
                         jqueryui: "vendors/jqueryui",
                         moment: "vendors/moment",
+                        keymaster: "vendors/keymaster",
 
                         // Modes
                         cm_html: "vendors/cm_modes/html/html",
@@ -88,7 +89,7 @@ module.exports = function (grunt) {
                             deps: ["use!underscore", "use!handlebars", "jquery"],
                             attach: "Backbone"
                         },
-                        "plugins/jquery.easing": {
+                        "plugins/jquery.validate": {
                             deps: ["jquery"]
                         },
                         "plugins/jquery.ui.position": {
@@ -106,8 +107,9 @@ module.exports = function (grunt) {
                         "plugins/backbone.layoutmanager": {
                             deps: ["use!backbone"]
                         },
-                        "plugins/backbone.localstorage": {
-                            deps: ["use!backbone"]
+                        "plugins/backbone.offline": {
+                            deps: ["use!backbone"],
+                            attach: "Offline"
                         },
                         "plugins/backbone.relational": {
                             deps: ["use!backbone"]
@@ -123,6 +125,9 @@ module.exports = function (grunt) {
                         },
                         codemirror: {
                             attach: "CodeMirror"
+                        },
+                        keymaster: {
+                            attach: "key"
                         },
 
                         /** CodeMirror Modes **/
