@@ -26,8 +26,8 @@ set :maintenance_template_path, app_path + "/maintenance.erb"
 default_run_options[:pty] = true
 
 # Set some paths to be shared between versions
-set :shared_files,    ["app/config/parameters.yml"]
-set :shared_children, [app_path + "/logs", web_path + "/uploads", "vendor"]
+set :shared_files,    ["app/config/parameters.yml", "vendor"]
+set :shared_children, [app_path + "/logs", web_path + "/uploads"]
 set :asset_children,   [web_path + "/css", web_path + "/js"]
 
 # Change ACL on the app/logs and app/cache directories
