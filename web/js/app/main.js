@@ -19889,7 +19889,6 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
 
                 this.type = this.options.type || "";
 
-
                 app.on("file:select", this.render, this);
                 app.project.on("add:files remove:files", this.render, this);
 
@@ -19912,7 +19911,7 @@ define('app/modules/files',["app/webide", "use!underscore", "use!backbone", "app
 
                 this.views = {};
 
-//                //Add each file to the tabs
+                //Add each file to the tabs
                 _.each(files, callback);
                 if(files.length > 0) {
                     this.insertView(new Files.Views.EndTabItem());
@@ -20181,9 +20180,7 @@ define('app/modules/header',["app/webide","use!backbone","app/modules/modals","a
             },
 
             initialize: function() {
-                app.project.on("change reset", function() {
-                    this.render();
-                }, this);
+                app.project.on("change reset", this.render, this);
             },
 
             serialize: function() {
@@ -20472,7 +20469,7 @@ function(webide, Backbone, Files) {
 	// Example extendings
 	Sidebar.Model = Backbone.Model.extend({
 		defaults: {
-			width: 275,
+			width: 250,
 			active: true
 		},
 		initialize: function() {}
@@ -20546,7 +20543,7 @@ function(webide, Backbone, Files) {
 		expand_sidebar: function(event) {
 			if(!this.model.get("active")) {
 				this.model.set({
-					width: 275,
+					width: 250,
 					active: true
 				});
 			}
@@ -26476,7 +26473,6 @@ function(webide, $, Backbone, _, key, App, Header, Sidebar, Editor, Footer, File
                 }
             });
 
-//            key.filter(function() { return true; });
             key.filter = function(event) { return true; };
             key('control+enter', 'editor', function(event) { app.trigger("run"); return false; });
             key('alt+enter', 'editor', function(event) { app.trigger("reload"); return false; });
@@ -26600,18 +26596,6 @@ function(webide, $, Backbone, _, key, App, Header, Sidebar, Editor, Footer, File
             $("body").html("<h1>404 Page Not Found</h1>");
         }
     });
-
-    app.showModal = function(id, options) {
-        var modal = webide.layout.getView(function(view) {
-            return $(view.el).attr('id') === id;
-        });
-
-        if (modal) {
-            window.modal = modal;
-        } else {
-            return false;
-        }
-    };
 
     $(function() {
         app.router = new Router();

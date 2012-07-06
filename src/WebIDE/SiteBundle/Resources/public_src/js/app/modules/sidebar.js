@@ -8,7 +8,7 @@ function(webide, Backbone, Files) {
 	// Example extendings
 	Sidebar.Model = Backbone.Model.extend({
 		defaults: {
-			width: 275,
+			width: 250,
 			active: true
 		},
 		initialize: function() {}
@@ -82,7 +82,7 @@ function(webide, Backbone, Files) {
 		expand_sidebar: function(event) {
 			if(!this.model.get("active")) {
 				this.model.set({
-					width: 275,
+					width: 250,
 					active: true
 				});
 			}
