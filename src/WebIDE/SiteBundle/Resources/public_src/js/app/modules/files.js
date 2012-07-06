@@ -302,7 +302,6 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
 
                 this.type = this.options.type || "";
 
-
                 app.on("file:select", this.render, this);
                 app.project.on("add:files remove:files", this.render, this);
 
@@ -325,7 +324,7 @@ define(["app/webide", "use!underscore", "use!backbone", "app/modules/versions", 
 
                 this.views = {};
 
-//                //Add each file to the tabs
+                //Add each file to the tabs
                 _.each(files, callback);
                 if(files.length > 0) {
                     this.insertView(new Files.Views.EndTabItem());

@@ -23,9 +23,7 @@ define(["app/webide","use!backbone","app/modules/modals","app/modules/versions"]
             },
 
             initialize: function() {
-                app.project.on("change reset", function() {
-                    this.render();
-                }, this);
+                app.project.on("change reset", this.render, this);
             },
 
             serialize: function() {

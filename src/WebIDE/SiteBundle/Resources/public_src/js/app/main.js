@@ -194,7 +194,6 @@ function(webide, $, Backbone, _, key, App, Header, Sidebar, Editor, Footer, File
                 }
             });
 
-//            key.filter(function() { return true; });
             key.filter = function(event) { return true; };
             key('control+enter', 'editor', function(event) { app.trigger("run"); return false; });
             key('alt+enter', 'editor', function(event) { app.trigger("reload"); return false; });
@@ -318,18 +317,6 @@ function(webide, $, Backbone, _, key, App, Header, Sidebar, Editor, Footer, File
             $("body").html("<h1>404 Page Not Found</h1>");
         }
     });
-
-    app.showModal = function(id, options) {
-        var modal = webide.layout.getView(function(view) {
-            return $(view.el).attr('id') === id;
-        });
-
-        if (modal) {
-            window.modal = modal;
-        } else {
-            return false;
-        }
-    };
 
     $(function() {
         app.router = new Router();
