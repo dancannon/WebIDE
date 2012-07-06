@@ -59,6 +59,12 @@ function(webide, Backbone, Files) {
             return this.model.toJSON();
         },
 
+        render: function(manage) {
+            return manage(this).render().then(function(el) {
+                googletag.cmd.push(function() { googletag.display('div-gpt-ad-1341605748462-0'); });
+            });
+        },
+
 		update_sidebar: function() {
 			var el = this.$el;
 			if (this.model.get("active") === true) {

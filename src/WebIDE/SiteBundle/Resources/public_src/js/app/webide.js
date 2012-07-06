@@ -15,6 +15,11 @@ define([
                 template: "/js/app/templates/"
             },
 
+            html: function(root, el) {
+                console.log($(root), el);
+                $(root).html(el);
+            },
+
             render: function (template, context) {
                 return Handlebars.compile(template)(context);
             },

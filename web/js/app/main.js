@@ -14346,6 +14346,11 @@ define('app/webide',[
                 template: "/js/app/templates/"
             },
 
+            html: function(root, el) {
+                console.log($(root), el);
+                $(root).html(el);
+            },
+
             render: function (template, context) {
                 return Handlebars.compile(template)(context);
             },
@@ -20518,6 +20523,12 @@ function(webide, Backbone, Files) {
 
         serialize: function() {
             return this.model.toJSON();
+        },
+
+        render: function(manage) {
+            return manage(this).render().then(function(el) {
+                googletag.cmd.push(function() { googletag.display('div-gpt-ad-1341605748462-0'); });
+            });
         },
 
 		update_sidebar: function() {

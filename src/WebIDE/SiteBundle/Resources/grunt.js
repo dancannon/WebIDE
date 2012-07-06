@@ -179,7 +179,8 @@ module.exports = function (grunt) {
                 Routing: true,
                 globals: true,
                 require: true,
-                define: true
+                define: true,
+                googletag: true
             }
         },
 
