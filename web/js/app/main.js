@@ -14347,7 +14347,6 @@ define('app/webide',[
             },
 
             html: function(root, el) {
-                console.log($(root), el);
                 $(root).html(el);
             },
 
@@ -26042,7 +26041,6 @@ function(webide, Backbone) {
 
         render: function(manage) {
             return manage(this).render().then(function(el) {
-                console.log("timeago");
                 $('time.timeago', el).timeago();
             });
         }
