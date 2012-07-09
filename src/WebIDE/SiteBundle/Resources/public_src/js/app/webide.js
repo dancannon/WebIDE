@@ -16,7 +16,6 @@ define([
             },
 
             html: function(root, el) {
-                console.log($(root), el);
                 $(root).html(el);
             },
 

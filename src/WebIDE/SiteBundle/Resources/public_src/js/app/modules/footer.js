@@ -17,7 +17,6 @@ function(webide, Backbone) {
 
         render: function(manage) {
             return manage(this).render().then(function(el) {
-                console.log("timeago");
                 $('time.timeago', el).timeago();
             });
         }
